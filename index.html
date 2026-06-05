@@ -317,47 +317,47 @@
   </div>
   </section>
 
-  <!-- ================= ④ 나이별 취업 난이도 ================= -->
+  <!-- ================= ④ 나이별 취업 난이도 (실데이터) ================= -->
   <section class="panel-sec sec-employ" id="sec-employ" style="display:none">
   <div class="panel">
-    <div class="sec-title">단타에 쓴 시간만큼, 취업은 어려워진다</div>
-    <p class="sec-desc">단타로 보낸 기간은 그냥 흘러간 시간이 아니라 '경력 공백'입니다. 현재 나이와 단타에 쓸 기간을 넣어보세요. 그 시간이 지난 뒤 신입·경력공백자의 정규직 취업 난이도가 얼마나 오르는지, 그리고 같은 나이에 계속 일한 또래와 격차가 얼마나 벌어지는지 보여줍니다.</p>
+    <div class="sec-title">단타로 흘려보낸 시간 = 경력 공백 (실제 통계)</div>
+    <p class="sec-desc">단타로 보낸 기간은 그냥 흘러간 시간이 아니라 이력서의 '공백'입니다. 현재 나이와 단타에 쓸 기간을 넣어보세요. 통계청·취업 조사의 <strong>실제 수치</strong>로, 그 공백이 당신을 어디에 데려다 놓는지 보여줍니다.</p>
     <div class="ctrl">
       <label for="eAge">현재 나이</label>
-      <input type="range" id="eAge" min="22" max="40" step="1" value="27">
+      <input type="range" id="eAge" min="20" max="34" step="1" value="27">
       <output id="eoAge">27세</output>
     </div>
     <div class="ctrl">
       <label for="eGap">단타에 쓸 기간</label>
-      <input type="range" id="eGap" min="0" max="10" step="1" value="3">
+      <input type="range" id="eGap" min="0" max="5" step="0.5" value="3">
       <output id="eoGap">3년</output>
     </div>
 
     <div class="metrics three">
       <div class="metric base">
-        <div class="k">지금 취업 난이도</div>
-        <div class="v" id="eNow">–</div>
+        <div class="k">첫 취업까지 평균</div>
+        <div class="v">11.5개월</div>
       </div>
       <div class="metric bad">
-        <div class="k" id="eLaterK">N년 후 난이도</div>
-        <div class="v" id="eLater">–</div>
+        <div class="k">단타 후 내 나이</div>
+        <div class="v" id="eFuture">–</div>
       </div>
       <div class="metric mine">
-        <div class="k">같은 나이 경력자</div>
-        <div class="v" id="ePeer">–</div>
+        <div class="k">그만큼 오래 쉰 청년</div>
+        <div class="v" id="eShare">–</div>
       </div>
     </div>
     <div class="verdict" id="eVerdict"></div>
 
     <div class="legend">
-      <span><span class="swatch" style="background:var(--red)"></span>신입·경력공백자 취업 난이도</span>
-      <span><span class="swatch" style="background:var(--green)"></span>계속 일한 또래(경력자)</span>
+      <span><span class="swatch" style="background:var(--red)"></span>단타 기간이 해당되는 구간</span>
+      <span><span class="swatch" style="background:rgba(95,107,99,0.45)"></span>그 외 미취업 청년 분포</span>
     </div>
     <div class="chart-box">
-      <canvas id="c4" role="img" aria-label="나이별 취업 난이도와 경력자 격차 그래프"></canvas>
+      <canvas id="c4" role="img" aria-label="미취업 청년의 미취업 기간별 분포 그래프">미취업 청년의 미취업 기간별 분포</canvas>
     </div>
     <div class="notes">
-      <strong>지표 설명.</strong> 한국 노동시장 패턴(신입 공채의 20대 선호, 30세 전후 신입 지원 기회 급감, 경력 공백이 길수록 커지는 정규직 재진입 페널티)을 0~100 난이도 지수로 단순화한 <strong>방향성 지표</strong>입니다. 특정 통계 수치 그 자체가 아니라 '나이가 들수록, 공백이 길수록 신입·재취업이 가팔라진다'는 경향을 보여주기 위한 것입니다. <strong>핵심:</strong> 단타로 N년을 보내는 동안 또래는 경력을 쌓아 난이도가 낮게 유지되지만, 공백자는 같은 나이에 훨씬 불리한 위치에서 출발하게 됩니다.
+      <strong>실제 수치.</strong> 미취업 기간 분포(6개월 미만 40.7% · 6개월~1년 13.7% · 1~3년 27.1% · 3년 이상 18.5%)와 첫 취업까지 평균 소요기간 11.5개월(역대 최장, 대졸 8.3개월·고졸이하 17.6개월)은 <strong>통계청 2024년 5월 경제활동인구조사 청년층(15~29세) 부가조사</strong> 결과입니다. 신입 채용 마지노선 '평균 31세'는 <strong>진학사 캐치의 Z세대 2,492명 조사</strong>(마지노선이 있다 57%)에서 나온 수치입니다. 참고로 청년층 고용률은 46.9%, 20대 후반은 71.8%로, 30·40대(약 80%)에 비해 '진입' 자체가 가장 어려운 구간입니다. <strong>핵심:</strong> 중년의 높은 고용률은 일찍 직장에 진입해 경력을 쌓은 사람들의 몫입니다. 단타로 공백을 늘리면 그 진입 자체가 늦어지고, 3년 이상 쉰 18.5%의 장기 미취업 그룹에 가까워집니다.
     </div>
   </div>
   </section>
@@ -610,86 +610,58 @@ function build3(){
   run3();
 }
 
-/* ===================== ④ 나이별 취업 난이도 ===================== */
+/* ===================== ④ 취업 난이도 (실데이터) ===================== */
 let chart4 = null, built4 = false;
-// 신입·경력공백자 정규직 취업 난이도 지수(0~100) — 방향성 지표
-const DIFF_ANCHORS  = [[22,12],[25,20],[28,33],[30,48],[32,60],[35,74],[38,83],[40,88],[45,94],[50,97]];
-const PEER_ANCHORS  = [[22,10],[25,12],[28,14],[30,16],[32,18],[35,21],[38,23],[40,25],[45,28],[50,30]];
-const E_AGES = Array.from({length: 50-22+1}, (_,i)=> 22+i);
-function interpAnchor(anchors, age){
-  if (age <= anchors[0][0]) return anchors[0][1];
-  if (age >= anchors[anchors.length-1][0]) return anchors[anchors.length-1][1];
-  for (let i=1; i<anchors.length; i++){
-    if (age <= anchors[i][0]){
-      const [x0,y0] = anchors[i-1], [x1,y1] = anchors[i];
-      return y0 + (y1-y0)*(age-x0)/(x1-x0);
-    }
-  }
-  return anchors[anchors.length-1][1];
-}
-function diffLabel(d){
-  if (d < 30) return '비교적 수월';
-  if (d < 50) return '보통';
-  if (d < 70) return '어려움';
-  if (d < 85) return '매우 어려움';
-  return '사실상 신입 불가';
-}
+// 미취업 청년 미취업 기간 분포 (통계청 2024.5 청년층 부가조사)
+const GAP_BUCKETS = ['6개월\n미만', '6개월~1년', '1~3년', '3년 이상'];
+const GAP_SHARE   = [40.7, 13.7, 27.1, 18.5];
+const HIRE_LINE   = 31; // 신입 채용 마지노선 평균(진학사 캐치 조사)
+// 단타 기간(년) → 해당 미취업 구간 인덱스
+function bucketOf(gap){ return gap < 0.5 ? 0 : gap < 1 ? 1 : gap < 3 ? 2 : 3; }
+// 단타 기간(년) → 미취업 청년 중 그만큼(이상) 오래 쉰 비율
+function shareAtLeast(gap){ return gap >= 3 ? 18.5 : gap >= 1 ? 45.6 : gap >= 0.5 ? 59.3 : 100; }
 function run4(){
   const now = +document.getElementById('eAge').value;
   const gap = +document.getElementById('eGap').value;
-  const later = Math.min(now + gap, 50);
+  const future = now + gap;
   document.getElementById('eoAge').textContent = now + '세';
-  document.getElementById('eoGap').textContent = gap + '년';
+  document.getElementById('eoGap').textContent = (gap % 1 === 0 ? gap : gap.toFixed(1)) + '년';
 
-  const dNow  = interpAnchor(DIFF_ANCHORS, now);
-  const dLater = interpAnchor(DIFF_ANCHORS, later);
-  const dPeer = interpAnchor(PEER_ANCHORS, later);
-
-  const diffLine = E_AGES.map(a => Math.round(interpAnchor(DIFF_ANCHORS, a)));
-  const peerLine = E_AGES.map(a => Math.round(interpAnchor(PEER_ANCHORS, a)));
-  const idxNow = E_AGES.indexOf(now);
-  const idxLater = E_AGES.indexOf(later);
-  const markNow   = E_AGES.map((a,i)=> i===idxNow   ? Math.round(dNow)   : null);
-  const markLater = E_AGES.map((a,i)=> i===idxLater ? Math.round(dLater) : null);
-
-  chart4.data.datasets[2].data = markNow;
-  chart4.data.datasets[3].data = markLater;
-  chart4.data.datasets[0].data = diffLine;
-  chart4.data.datasets[1].data = peerLine;
+  const bi = bucketOf(gap);
+  const share = shareAtLeast(gap);
+  chart4.data.datasets[0].backgroundColor = GAP_SHARE.map((_,i)=> i===bi ? '#b23a2e' : 'rgba(95,107,99,0.45)');
   chart4.update();
 
-  document.getElementById('eNow').textContent = Math.round(dNow);
-  document.getElementById('eLaterK').textContent = (gap>0 ? gap+'년 후('+later+'세) 난이도' : '같은 시점 난이도');
-  document.getElementById('eLater').textContent = Math.round(dLater);
-  document.getElementById('ePeer').textContent = Math.round(dPeer);
+  document.getElementById('eFuture').textContent = (future % 1 === 0 ? future : future.toFixed(1)) + '세';
+  document.getElementById('eShare').textContent  = (gap < 0.5 ? '대다수' : share + '%');
 
   const v = document.getElementById('eVerdict');
   if (gap === 0){
     v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
-    v.textContent = '지금 ' + now + '세의 취업 난이도는 약 ' + Math.round(dNow) + '(' + diffLabel(dNow) + '). 단타에 쓸 기간을 1년만 올려봐도 곡선이 어떻게 가팔라지는지 보세요.';
-  } else {
-    const jump = Math.round(dLater - dNow);
-    const gapDiff = Math.round(dLater - dPeer);
+    v.textContent = '청년이 첫 직장을 잡기까지 평균 11.5개월(역대 최장)이 걸립니다. 단타에 쓸 기간을 늘려보면, 그 공백이 당신을 어느 그룹으로 밀어 넣는지 보세요.';
+  } else if (future >= HIRE_LINE || gap >= 3){
     v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
-    v.textContent = '✗ 단타 ' + gap + '년이면 취업 난이도가 약 ' + Math.round(dNow) + '(' + diffLabel(dNow) + ') → ' + Math.round(dLater) + '(' + diffLabel(dLater) + ')로 +' + jump + ' 오릅니다. ' + later + '세에 계속 일한 또래(약 ' + Math.round(dPeer) + ')와는 약 ' + gapDiff + '포인트 벌어집니다.';
+    let msg = '✗ 단타 ' + (gap%1===0?gap:gap.toFixed(1)) + '년이면 ' + (future%1===0?future:future.toFixed(1)) + '세 — ';
+    if (future >= HIRE_LINE) msg += '신입 채용 마지노선(평균 31세)을 넘깁니다. ';
+    msg += '미취업 청년 중 당신만큼 오래 쉰 사람은 ' + share + '%뿐이고, 나머지는 더 일찍 취업했습니다.';
+    v.textContent = msg;
+  } else {
+    v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
+    v.textContent = '△ 단타 ' + (gap%1===0?gap:gap.toFixed(1)) + '년이면 ' + (future%1===0?future:future.toFixed(1)) + '세. 아직 신입 마지노선(평균 31세) 안이지만, 미취업이 길어질수록 첫 취업이 급격히 어려워집니다(현재 평균 11.5개월). 1년만 더 늘려보세요.';
   }
 }
 function build4(){
   chart4 = new Chart(document.getElementById('c4'), {
-    type: 'line',
-    data: { labels: E_AGES, datasets: [
-      { label: '신입·공백자 난이도', data: [], borderColor: '#b23a2e', backgroundColor: 'rgba(178,58,46,0.07)', borderWidth: 2.6, tension: 0.35, pointRadius: 0, fill: true },
-      { label: '계속 일한 또래', data: [], borderColor: '#0f6e56', backgroundColor: 'rgba(15,110,86,0.05)', borderWidth: 2.2, borderDash: [6,5], tension: 0.35, pointRadius: 0, fill: false },
-      { label: '지금', data: [], borderColor: '#185fa5', backgroundColor: '#185fa5', pointRadius: 7, pointHoverRadius: 8, showLine: false },
-      { label: '단타 N년 후', data: [], borderColor: '#b23a2e', backgroundColor: '#fffdf8', borderWidth: 3, pointRadius: 8, pointHoverRadius: 9, pointStyle: 'rectRot', showLine: false }
+    type: 'bar',
+    data: { labels: GAP_BUCKETS.map(s=>s.split('\n')), datasets: [
+      { label: '미취업 청년 비율', data: GAP_SHARE, backgroundColor: [], borderRadius: 6, maxBarThickness: 90 }
     ]},
     options: { responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'nearest', intersect: false },
       plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: (c)=> c.parsed.y==null ? null : c.dataset.label + ': 난이도 ' + c.parsed.y } } },
+        tooltip: { callbacks: { label: (c)=> '미취업 청년의 ' + c.parsed.y + '%' } } },
       scales: {
-        x: { title: { display: true, text: '나이 (세)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63', maxTicksLimit: 10 } },
-        y: { beginAtZero: true, max: 100, title: { display: true, text: '취업 난이도 지수' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63' } }
+        x: { title: { display: true, text: '졸업 후 미취업(공백) 기간' }, grid: { display: false }, ticks: { color: '#5f6b63' } },
+        y: { beginAtZero: true, title: { display: true, text: '미취업 청년 비율 (%)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'%', color: '#5f6b63' } }
       } }
   });
   ['eAge','eGap'].forEach(id => document.getElementById(id).addEventListener('input', run4));
