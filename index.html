@@ -104,6 +104,8 @@
   .sec-trade input[type=range]::-moz-range-thumb { background: var(--blue); }
   .sec-survive input[type=range]::-webkit-slider-thumb { background: var(--red); box-shadow: 0 1px 4px rgba(178,58,46,0.4); }
   .sec-survive input[type=range]::-moz-range-thumb { background: var(--red); }
+  .sec-employ input[type=range]::-webkit-slider-thumb { background: var(--gold); box-shadow: 0 1px 4px rgba(176,125,34,0.4); }
+  .sec-employ input[type=range]::-moz-range-thumb { background: var(--gold); }
   .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
   .metrics.three { grid-template-columns: 1fr 1fr 1fr; }
   .metric { background: var(--paper); border-radius: 12px; padding: 16px 18px; }
@@ -149,6 +151,7 @@
     <button class="tab active" id="tab-save"    onclick="showTab('save')">① 적립 비교</button>
     <button class="tab"        id="tab-trade"   onclick="showTab('trade')">② 단타 vs 취업+적립</button>
     <button class="tab"        id="tab-survive" onclick="showTab('survive')">③ 단타로 생존</button>
+    <button class="tab"        id="tab-employ"  onclick="showTab('employ')">④ 나이별 취업 난이도</button>
   </div>
 
   <!-- ================= ① 적립 비교 (기존) ================= -->
@@ -310,6 +313,51 @@
     </div>
     <div class="notes">
       <strong>모델.</strong> 매달 21거래일 × 1일 10회 매매로 손익을 반영(거래비용 왕복 0.2% 포함)한 뒤 생활비를 차감합니다. 잔고가 0 이하가 되는 달을 파산으로 기록, 1,000명 10년 시뮬레이션. <strong>핵심:</strong> 손익분기 수준의 단타(승률 약 60%)여도 생활비 인출이 계좌를 갉아먹어, 작은 시드로는 결국 파산하는 경로가 대부분입니다. 소득이 있는 적립과 가장 큰 차이는 바로 이 '인출' 압력입니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ④ 나이별 취업 난이도 ================= -->
+  <section class="panel-sec sec-employ" id="sec-employ" style="display:none">
+  <div class="panel">
+    <div class="sec-title">단타에 쓴 시간만큼, 취업은 어려워진다</div>
+    <p class="sec-desc">단타로 보낸 기간은 그냥 흘러간 시간이 아니라 '경력 공백'입니다. 현재 나이와 단타에 쓸 기간을 넣어보세요. 그 시간이 지난 뒤 신입·경력공백자의 정규직 취업 난이도가 얼마나 오르는지, 그리고 같은 나이에 계속 일한 또래와 격차가 얼마나 벌어지는지 보여줍니다.</p>
+    <div class="ctrl">
+      <label for="eAge">현재 나이</label>
+      <input type="range" id="eAge" min="22" max="40" step="1" value="27">
+      <output id="eoAge">27세</output>
+    </div>
+    <div class="ctrl">
+      <label for="eGap">단타에 쓸 기간</label>
+      <input type="range" id="eGap" min="0" max="10" step="1" value="3">
+      <output id="eoGap">3년</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric base">
+        <div class="k">지금 취업 난이도</div>
+        <div class="v" id="eNow">–</div>
+      </div>
+      <div class="metric bad">
+        <div class="k" id="eLaterK">N년 후 난이도</div>
+        <div class="v" id="eLater">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">같은 나이 경력자</div>
+        <div class="v" id="ePeer">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="eVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--red)"></span>신입·경력공백자 취업 난이도</span>
+      <span><span class="swatch" style="background:var(--green)"></span>계속 일한 또래(경력자)</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c4" role="img" aria-label="나이별 취업 난이도와 경력자 격차 그래프"></canvas>
+    </div>
+    <div class="notes">
+      <strong>지표 설명.</strong> 한국 노동시장 패턴(신입 공채의 20대 선호, 30세 전후 신입 지원 기회 급감, 경력 공백이 길수록 커지는 정규직 재진입 페널티)을 0~100 난이도 지수로 단순화한 <strong>방향성 지표</strong>입니다. 특정 통계 수치 그 자체가 아니라 '나이가 들수록, 공백이 길수록 신입·재취업이 가팔라진다'는 경향을 보여주기 위한 것입니다. <strong>핵심:</strong> 단타로 N년을 보내는 동안 또래는 경력을 쌓아 난이도가 낮게 유지되지만, 공백자는 같은 나이에 훨씬 불리한 위치에서 출발하게 됩니다.
     </div>
   </div>
   </section>
@@ -562,6 +610,92 @@ function build3(){
   run3();
 }
 
+/* ===================== ④ 나이별 취업 난이도 ===================== */
+let chart4 = null, built4 = false;
+// 신입·경력공백자 정규직 취업 난이도 지수(0~100) — 방향성 지표
+const DIFF_ANCHORS  = [[22,12],[25,20],[28,33],[30,48],[32,60],[35,74],[38,83],[40,88],[45,94],[50,97]];
+const PEER_ANCHORS  = [[22,10],[25,12],[28,14],[30,16],[32,18],[35,21],[38,23],[40,25],[45,28],[50,30]];
+const E_AGES = Array.from({length: 50-22+1}, (_,i)=> 22+i);
+function interpAnchor(anchors, age){
+  if (age <= anchors[0][0]) return anchors[0][1];
+  if (age >= anchors[anchors.length-1][0]) return anchors[anchors.length-1][1];
+  for (let i=1; i<anchors.length; i++){
+    if (age <= anchors[i][0]){
+      const [x0,y0] = anchors[i-1], [x1,y1] = anchors[i];
+      return y0 + (y1-y0)*(age-x0)/(x1-x0);
+    }
+  }
+  return anchors[anchors.length-1][1];
+}
+function diffLabel(d){
+  if (d < 30) return '비교적 수월';
+  if (d < 50) return '보통';
+  if (d < 70) return '어려움';
+  if (d < 85) return '매우 어려움';
+  return '사실상 신입 불가';
+}
+function run4(){
+  const now = +document.getElementById('eAge').value;
+  const gap = +document.getElementById('eGap').value;
+  const later = Math.min(now + gap, 50);
+  document.getElementById('eoAge').textContent = now + '세';
+  document.getElementById('eoGap').textContent = gap + '년';
+
+  const dNow  = interpAnchor(DIFF_ANCHORS, now);
+  const dLater = interpAnchor(DIFF_ANCHORS, later);
+  const dPeer = interpAnchor(PEER_ANCHORS, later);
+
+  const diffLine = E_AGES.map(a => Math.round(interpAnchor(DIFF_ANCHORS, a)));
+  const peerLine = E_AGES.map(a => Math.round(interpAnchor(PEER_ANCHORS, a)));
+  const idxNow = E_AGES.indexOf(now);
+  const idxLater = E_AGES.indexOf(later);
+  const markNow   = E_AGES.map((a,i)=> i===idxNow   ? Math.round(dNow)   : null);
+  const markLater = E_AGES.map((a,i)=> i===idxLater ? Math.round(dLater) : null);
+
+  chart4.data.datasets[2].data = markNow;
+  chart4.data.datasets[3].data = markLater;
+  chart4.data.datasets[0].data = diffLine;
+  chart4.data.datasets[1].data = peerLine;
+  chart4.update();
+
+  document.getElementById('eNow').textContent = Math.round(dNow);
+  document.getElementById('eLaterK').textContent = (gap>0 ? gap+'년 후('+later+'세) 난이도' : '같은 시점 난이도');
+  document.getElementById('eLater').textContent = Math.round(dLater);
+  document.getElementById('ePeer').textContent = Math.round(dPeer);
+
+  const v = document.getElementById('eVerdict');
+  if (gap === 0){
+    v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
+    v.textContent = '지금 ' + now + '세의 취업 난이도는 약 ' + Math.round(dNow) + '(' + diffLabel(dNow) + '). 단타에 쓸 기간을 1년만 올려봐도 곡선이 어떻게 가팔라지는지 보세요.';
+  } else {
+    const jump = Math.round(dLater - dNow);
+    const gapDiff = Math.round(dLater - dPeer);
+    v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+    v.textContent = '✗ 단타 ' + gap + '년이면 취업 난이도가 약 ' + Math.round(dNow) + '(' + diffLabel(dNow) + ') → ' + Math.round(dLater) + '(' + diffLabel(dLater) + ')로 +' + jump + ' 오릅니다. ' + later + '세에 계속 일한 또래(약 ' + Math.round(dPeer) + ')와는 약 ' + gapDiff + '포인트 벌어집니다.';
+  }
+}
+function build4(){
+  chart4 = new Chart(document.getElementById('c4'), {
+    type: 'line',
+    data: { labels: E_AGES, datasets: [
+      { label: '신입·공백자 난이도', data: [], borderColor: '#b23a2e', backgroundColor: 'rgba(178,58,46,0.07)', borderWidth: 2.6, tension: 0.35, pointRadius: 0, fill: true },
+      { label: '계속 일한 또래', data: [], borderColor: '#0f6e56', backgroundColor: 'rgba(15,110,86,0.05)', borderWidth: 2.2, borderDash: [6,5], tension: 0.35, pointRadius: 0, fill: false },
+      { label: '지금', data: [], borderColor: '#185fa5', backgroundColor: '#185fa5', pointRadius: 7, pointHoverRadius: 8, showLine: false },
+      { label: '단타 N년 후', data: [], borderColor: '#b23a2e', backgroundColor: '#fffdf8', borderWidth: 3, pointRadius: 8, pointHoverRadius: 9, pointStyle: 'rectRot', showLine: false }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c)=> c.parsed.y==null ? null : c.dataset.label + ': 난이도 ' + c.parsed.y } } },
+      scales: {
+        x: { title: { display: true, text: '나이 (세)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63', maxTicksLimit: 10 } },
+        y: { beginAtZero: true, max: 100, title: { display: true, text: '취업 난이도 지수' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63' } }
+      } }
+  });
+  ['eAge','eGap'].forEach(id => document.getElementById(id).addEventListener('input', run4));
+  run4();
+}
+
 /* ===================== 탭 전환 ===================== */
 function showTab(name){
   document.querySelectorAll('.panel-sec').forEach(s => s.style.display='none');
@@ -570,6 +704,7 @@ function showTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   if (name==='trade'   && !built2){ built2=true; build2(); }
   if (name==='survive' && !built3){ built3=true; build3(); }
+  if (name==='employ'  && !built4){ built4=true; build4(); }
 }
 </script>
 </body>
