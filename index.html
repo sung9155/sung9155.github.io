@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>단타로 살 수 있을까 · 현실 시뮬레이터</title>
+<meta name="description" content="단타 vs 취업+적립 자산 비교, 그리고 단타 수익만으로 생활할 때의 파산 시뮬레이션. 슬라이더로 직접 확인해보세요.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f3ec;
+    --ink: #1c2420;
+    --muted: #5f6b63;
+    --line: rgba(28,36,32,0.12);
+    --card: #fffdf8;
+    --green: #0f6e56;
+    --green-soft: rgba(15,110,86,0.10);
+    --blue: #185fa5;
+    --blue-soft: rgba(24,95,165,0.10);
+    --red: #b23a2e;
+    --red-soft: rgba(178,58,46,0.10);
+    --gold: #b07d22;
+    --success-bg: #e3f1ea;
+    --success-tx: #0c5640;
+    --warn-bg: #f7ecd7;
+    --warn-tx: #8a5c0e;
+    --danger-bg: #f6e1dd;
+    --danger-tx: #8a2c20;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 48px 20px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--green); font-weight: 600; margin-bottom: 14px;
+    opacity: 0; animation: rise .7s ease forwards;
+  }
+  h1 {
+    font-family: 'Fraunces', 'Pretendard', serif;
+    font-weight: 500; font-size: 34px; line-height: 1.25; letter-spacing: -0.01em;
+    margin-bottom: 14px; opacity: 0; animation: rise .7s ease .08s forwards;
+  }
+  .lede {
+    font-size: 16px; color: var(--muted); max-width: 56ch;
+    opacity: 0; animation: rise .7s ease .16s forwards;
+  }
+  .tabs {
+    display: flex; gap: 8px; margin-top: 30px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 5;
+    padding: 10px 0; background: var(--paper);
+    opacity: 0; animation: rise .7s ease .2s forwards;
+  }
+  .tab {
+    font-family: 'Pretendard', sans-serif; font-size: 14px; font-weight: 500;
+    color: var(--muted); background: var(--card);
+    border: 1px solid var(--line); border-radius: 99px;
+    padding: 9px 16px; cursor: pointer; transition: all .15s;
+  }
+  .tab:hover { color: var(--ink); border-color: rgba(28,36,32,0.25); }
+  .tab.active { color: #fff; background: var(--ink); border-color: var(--ink); }
+  .panel {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 28px; margin-top: 16px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+  }
+  .panel-sec { animation: rise .5s ease forwards; }
+  .sec-title {
+    font-family: 'Fraunces', serif; font-weight: 500; font-size: 21px;
+    margin-bottom: 6px;
+  }
+  .sec-desc { font-size: 14.5px; color: var(--muted); margin-bottom: 22px; max-width: 60ch; }
+  .ctrl { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .ctrl:last-of-type { margin-bottom: 4px; }
+  .ctrl label { font-size: 14px; color: var(--muted); min-width: 96px; font-weight: 500; }
+  .ctrl output {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    min-width: 78px; text-align: right; color: var(--ink);
+  }
+  input[type=range] {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 5px; border-radius: 99px; background: var(--line); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green); border: 3px solid var(--card);
+    box-shadow: 0 1px 4px rgba(15,110,86,0.4); cursor: pointer; transition: transform .12s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--green);
+    border: 3px solid var(--card); cursor: pointer;
+  }
+  .sec-trade input[type=range]::-webkit-slider-thumb { background: var(--blue); box-shadow: 0 1px 4px rgba(24,95,165,0.4); }
+  .sec-trade input[type=range]::-moz-range-thumb { background: var(--blue); }
+  .sec-survive input[type=range]::-webkit-slider-thumb { background: var(--red); box-shadow: 0 1px 4px rgba(178,58,46,0.4); }
+  .sec-survive input[type=range]::-moz-range-thumb { background: var(--red); }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
+  .metrics.three { grid-template-columns: 1fr 1fr 1fr; }
+  .metric { background: var(--paper); border-radius: 12px; padding: 16px 18px; }
+  .metric .k { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .metric .v { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500; line-height: 1.1; }
+  .metric.base .v { color: var(--green); }
+  .metric.mine .v { color: var(--blue); }
+  .metric.bad .v  { color: var(--red); }
+  .verdict {
+    margin-top: 16px; padding: 13px 16px; border-radius: 12px;
+    font-size: 14.5px; font-weight: 500; display: flex; align-items: flex-start; gap: 8px;
+  }
+  .legend { display: flex; gap: 18px; margin: 26px 0 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 7px; }
+  .swatch { width: 18px; height: 3px; border-radius: 2px; }
+  .swatch.band { height: 11px; border-radius: 3px; }
+  .chart-box { position: relative; width: 100%; height: 330px; }
+  .notes {
+    margin-top: 22px; font-size: 13px; color: var(--muted); line-height: 1.7;
+    border-top: 1px solid var(--line); padding-top: 18px;
+  }
+  .notes strong { color: var(--ink); font-weight: 600; }
+  .footnote {
+    margin-top: 30px; font-size: 12.5px; color: var(--muted); line-height: 1.7;
+    opacity: 0; animation: rise .7s ease .32s forwards;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 540px) {
+    h1 { font-size: 27px; }
+    .metrics, .metrics.three { grid-template-columns: 1fr; }
+    .panel { padding: 20px; }
+    .ctrl label { min-width: 84px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">단타 현실 시뮬레이터</p>
+  <h1>단타로 먹고살 수 있을까? 숫자로 확인해보자.</h1>
+  <p class="lede">"취업 대신 단타로 살겠다"는 말, 슬라이더로 직접 검증해보세요. 승률과 손익비를 아무리 좋게 넣어도 거래비용과 변동성이 어떻게 작동하는지, 그리고 생활비를 단타로만 충당할 때 계좌가 언제 0원이 되는지 보여줍니다.</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-save"    onclick="showTab('save')">① 적립 비교</button>
+    <button class="tab"        id="tab-trade"   onclick="showTab('trade')">② 단타 vs 취업+적립</button>
+    <button class="tab"        id="tab-survive" onclick="showTab('survive')">③ 단타로 생존</button>
+  </div>
+
+  <!-- ================= ① 적립 비교 (기존) ================= -->
+  <section class="panel-sec" id="sec-save">
+  <div class="panel">
+    <div class="sec-title">늦게 시작해도 따라잡을 수 있을까?</div>
+    <p class="sec-desc">취업 나이·저축률·연 수익률을 바꿔보세요. 25세에 시작해 저축률 33%·연 4%로 모은 기준선을, 당신의 시나리오가 65세 시점에 따라잡는지 보여줍니다.</p>
+    <div class="ctrl">
+      <label for="sAge">취업 나이</label>
+      <input type="range" id="sAge" min="25" max="45" step="1" value="40">
+      <output id="oAge">40세</output>
+    </div>
+    <div class="ctrl">
+      <label for="sSave">저축률</label>
+      <input type="range" id="sSave" min="10" max="70" step="1" value="33">
+      <output id="oSave">33%</output>
+    </div>
+    <div class="ctrl">
+      <label for="sRet">연 수익률</label>
+      <input type="range" id="sRet" min="2" max="12" step="0.5" value="4">
+      <output id="oRet">4%</output>
+    </div>
+
+    <div class="metrics">
+      <div class="metric base">
+        <div class="k">기준선 · 25세 · 33% · 4%</div>
+        <div class="v" id="mBase">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">내 시나리오 · 65세 자산</div>
+        <div class="v" id="mMine">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--green)"></span>기준선</span>
+      <span><span class="swatch" style="background:var(--blue)"></span>내 시나리오</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="cu" role="img" aria-label="기준선과 내 시나리오의 누적 자산 비교 그래프">취업 나이·저축률·수익률에 따른 누적 자산 곡선 비교</canvas>
+    </div>
+    <div class="notes">
+      <strong>가정.</strong> 한국 임금근로자의 나이별 평균 월소득(20대 초반 약 200만원 → 40대 후반 약 450만원 정점 → 60대 초반 약 290만원)을 기준으로, 매년 소득의 일정 비율을 저축하고 연 복리 수익이 붙는다고 단순화했습니다. 65세까지 적립하며, 늦게 시작해도 시작 이후로는 동일한 소득 곡선을 따른다고 가정합니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ② 단타 vs 취업+적립 ================= -->
+  <section class="panel-sec sec-trade" id="sec-trade" style="display:none">
+  <div class="panel">
+    <div class="sec-title">단타 vs 취업하며 적립투자 — 5년 후</div>
+    <p class="sec-desc">당신의 단타 실력을 가장 좋게 가정해보세요. 같은 시드로 1,000명이 5년간 단타를 했을 때 결과 분포를, "취업해서 월급의 일부를 지수에 적립한 사람"과 비교합니다. 승률 50%·손익비 1.0이어도 왜 대부분 지는지 직접 확인할 수 있습니다.</p>
+    <div class="ctrl">
+      <label for="tSeed">시드머니</label>
+      <input type="range" id="tSeed" min="500" max="10000" step="100" value="3000">
+      <output id="toSeed">3,000만</output>
+    </div>
+    <div class="ctrl">
+      <label for="tWin">단타 승률</label>
+      <input type="range" id="tWin" min="40" max="65" step="1" value="50">
+      <output id="toWin">50%</output>
+    </div>
+    <div class="ctrl">
+      <label for="tPay">손익비</label>
+      <input type="range" id="tPay" min="0.5" max="2" step="0.1" value="1">
+      <output id="toPay">1.0 : 1</output>
+    </div>
+    <div class="ctrl">
+      <label for="tFreq">1일 매매횟수</label>
+      <input type="range" id="tFreq" min="1" max="30" step="1" value="10">
+      <output id="toFreq">10회</output>
+    </div>
+    <div class="ctrl">
+      <label for="tSave">월 적립액</label>
+      <input type="range" id="tSave" min="0" max="300" step="10" value="100">
+      <output id="toSave">100만</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric mine">
+        <div class="k">단타 중앙값 · 5년 후</div>
+        <div class="v" id="tMed">–</div>
+      </div>
+      <div class="metric base">
+        <div class="k">취업+적립 · 5년 후</div>
+        <div class="v" id="tEmp">–</div>
+      </div>
+      <div class="metric bad">
+        <div class="k">원금 손실 확률</div>
+        <div class="v" id="tLoss">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="tVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch band" style="background:var(--blue-soft)"></span>단타 결과 분포(10~90%)</span>
+      <span><span class="swatch" style="background:var(--blue)"></span>단타 중앙값</span>
+      <span><span class="swatch" style="background:var(--green)"></span>취업+적립</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c2" role="img" aria-label="단타 결과 분포와 취업+적립 자산 비교 그래프"></canvas>
+    </div>
+    <div class="notes">
+      <strong>모델.</strong> 매 거래마다 시드의 1%를 위험에 노출(손절 -1%, 익절 손익비×1%)하고, 왕복 거래비용(증권거래세·수수료·슬리피지)으로 0.2%가 빠진다고 가정합니다. 연 250거래일, 1,000명 몬테카를로 시뮬레이션. 취업+적립은 시드와 월 적립액을 연 6% 지수에 복리로 굴린 값입니다. <strong>핵심:</strong> 거래비용과 변동성 손실(volatility drag) 때문에, 1:1 손익비에서는 승률이 약 60%를 넘어야 겨우 지수를 따라잡습니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ③ 단타로 생존 (파산) ================= -->
+  <section class="panel-sec sec-survive" id="sec-survive" style="display:none">
+  <div class="panel">
+    <div class="sec-title">무직 + 단타로 생활 — 계좌는 언제 0원이 될까?</div>
+    <p class="sec-desc">소득 없이 생활비를 단타 수익으로만 충당하는 시나리오입니다. 매달 단타 손익을 반영한 뒤 생활비를 빼고, 계좌가 0원이 되면 파산입니다. 1,000명을 10년간 돌려 파산 시점과 파산 확률을 보여줍니다.</p>
+    <div class="ctrl">
+      <label for="vSeed">시드머니</label>
+      <input type="range" id="vSeed" min="500" max="10000" step="100" value="3000">
+      <output id="voSeed">3,000만</output>
+    </div>
+    <div class="ctrl">
+      <label for="vCost">월 생활비</label>
+      <input type="range" id="vCost" min="50" max="400" step="10" value="150">
+      <output id="voCost">150만</output>
+    </div>
+    <div class="ctrl">
+      <label for="vWin">단타 승률</label>
+      <input type="range" id="vWin" min="40" max="65" step="1" value="52">
+      <output id="voWin">52%</output>
+    </div>
+    <div class="ctrl">
+      <label for="vPay">손익비</label>
+      <input type="range" id="vPay" min="0.5" max="2" step="0.1" value="1">
+      <output id="voPay">1.0 : 1</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric bad">
+        <div class="k">3년 내 파산 확률</div>
+        <div class="v" id="vP36">–</div>
+      </div>
+      <div class="metric bad">
+        <div class="k">중앙 생존 기간</div>
+        <div class="v" id="vSurv">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">10년 생존 확률</div>
+        <div class="v" id="vAlive">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="vVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch band" style="background:var(--red-soft)"></span>계좌 잔고 분포(10~90%)</span>
+      <span><span class="swatch" style="background:var(--red)"></span>잔고 중앙값</span>
+      <span><span class="swatch" style="background:var(--muted)"></span>최초 시드</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c3" role="img" aria-label="단타로 생활할 때 계좌 잔고 변화와 파산 시점 그래프"></canvas>
+    </div>
+    <div class="notes">
+      <strong>모델.</strong> 매달 21거래일 × 1일 10회 매매로 손익을 반영(거래비용 왕복 0.2% 포함)한 뒤 생활비를 차감합니다. 잔고가 0 이하가 되는 달을 파산으로 기록, 1,000명 10년 시뮬레이션. <strong>핵심:</strong> 손익분기 수준의 단타(승률 약 60%)여도 생활비 인출이 계좌를 갉아먹어, 작은 시드로는 결국 파산하는 경로가 대부분입니다. 소득이 있는 적립과 가장 큰 차이는 바로 이 '인출' 압력입니다.
+    </div>
+  </div>
+  </section>
+
+  <div class="footnote">
+    이 페이지는 정보 제공·교육용이며 특정 투자 권유가 아닙니다. 단순화된 모델이라 실제 수익률은 변동하며 손실이 발생할 수 있습니다. 실증 연구들에서 개인 단타 투자자의 절대다수가 거래비용 차감 후 장기적으로 손실을 보고, 꾸준히 수익을 내는 비율은 극소수로 보고됩니다. 본인 상황에 맞춘 판단은 직접 내리시기 바랍니다.
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ---------- 공통 헬퍼 ---------- */
+// 금액(만원 단위) → 사람이 읽는 문자열
+function won(manwon){
+  if (manwon >= 10000) return (Math.round(manwon/1000)/10) + '억';
+  if (manwon <= 0) return '0원';
+  return Math.round(manwon).toLocaleString() + '만';
+}
+function comma(n){ return Math.round(n).toLocaleString(); }
+function pct(arr, q){
+  const a = arr.slice().sort((x,y)=>x-y);
+  const i = (a.length-1)*q, lo = Math.floor(i), hi = Math.ceil(i);
+  return a[lo] + (a[hi]-a[lo])*(i-lo);
+}
+const TRADE_RISK = 0.01;   // 거래당 위험 노출 1%
+const TRADE_COST = 0.002;  // 왕복 거래비용 0.2%
+// 한 번의 매매 결과 배수
+function oneTrade(p, b){
+  return Math.random() < p ? (1 + TRADE_RISK*b - TRADE_COST)
+                           : (1 - TRADE_RISK   - TRADE_COST);
+}
+
+/* ===================== ① 적립 비교 (기존) ===================== */
+const labs = [25,30,35,40,45,50,55,60,65];
+const inc = (a) => a<25?200:a<30?270:a<35?340:a<40?390:a<45?430:a<50?450:a<55?440:a<60?400:290;
+function series(startAge, sr, r) {
+  let bal = 0; const out = [];
+  for (let a = 25; a <= 65; a++) {
+    if (labs.includes(a)) out.push(Math.round(bal/1000)/10);
+    if (a >= startAge && a < 65) bal = bal*(1+r) + inc(a)*12*sr;
+  }
+  return { s: out, final: bal/10000 };
+}
+const base = series(25, 0.33, 0.04);
+const fmtEok = (v) => '약 ' + (Math.round(v*10)/10) + '억';
+document.getElementById('mBase').textContent = fmtEok(base.final);
+
+const chart1 = new Chart(document.getElementById('cu'), {
+  type: 'line',
+  data: { labels: labs, datasets: [
+    { label: '기준선', data: base.s, borderColor: '#0f6e56', backgroundColor: 'rgba(15,110,86,0.07)', borderWidth: 2.5, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#0f6e56', fill: false },
+    { label: '내 시나리오', data: [], borderColor: '#185fa5', backgroundColor: 'rgba(24,95,165,0.10)', borderWidth: 2.5, borderDash: [6,5], tension: 0.4, pointRadius: 3, pointBackgroundColor: '#185fa5', pointStyle: 'rectRot', fill: true }
+  ]},
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + (c.parsed.y==null?'-':'약 '+c.parsed.y+'억원') } } },
+    scales: {
+      x: { title: { display: true, text: '나이 (세)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { autoSkip: false, color: '#5f6b63' } },
+      y: { beginAtZero: true, title: { display: true, text: '누적 자산 (억원)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'억', color: '#5f6b63' } }
+    } }
+});
+function update1() {
+  const age = +document.getElementById('sAge').value;
+  const sr = +document.getElementById('sSave').value / 100;
+  const r = +document.getElementById('sRet').value / 100;
+  document.getElementById('oAge').textContent = age + '세';
+  document.getElementById('oSave').textContent = Math.round(sr*100) + '%';
+  document.getElementById('oRet').textContent = (Math.round(r*1000)/10) + '%';
+  const mine = series(age, sr, r);
+  chart1.data.datasets[1].data = mine.s.map((v,i) => labs[i] < age ? null : v);
+  chart1.update();
+  document.getElementById('mMine').textContent = fmtEok(mine.final);
+  const v = document.getElementById('verdict');
+  const diff = mine.final - base.final;
+  if (diff >= -0.3) {
+    v.style.background = 'var(--success-bg)'; v.style.color = 'var(--success-tx)';
+    v.textContent = '✓ 기준선을 따라잡았습니다 (' + (diff>=0?'+':'') + (Math.round(diff*10)/10) + '억).';
+  } else {
+    v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
+    v.textContent = '↓ 아직 약 ' + (Math.round(Math.abs(diff)*10)/10) + '억 부족합니다.';
+  }
+}
+['sAge','sSave','sRet'].forEach(id => document.getElementById(id).addEventListener('input', update1));
+update1();
+
+/* ===================== ② 단타 vs 취업+적립 ===================== */
+let chart2 = null, built2 = false, raf2 = null;
+function buildBandChart(canvasId, mainColor, mainSoft, refColor, refLabel, refDash){
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label: 'p90', data: [], borderColor: 'rgba(0,0,0,0)', pointRadius: 0, fill: false, tension: 0.3 },
+      { label: '분포', data: [], borderColor: 'rgba(0,0,0,0)', backgroundColor: mainSoft, pointRadius: 0, fill: '-1', tension: 0.3 },
+      { label: '중앙값', data: [], borderColor: mainColor, borderWidth: 2.6, pointRadius: 0, fill: false, tension: 0.3 },
+      { label: refLabel, data: [], borderColor: refColor, borderWidth: 2.2, borderDash: refDash, pointRadius: 0, fill: false, tension: 0.3 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { filter: (i)=> i.datasetIndex !== 0 && i.datasetIndex !== 1,
+          callbacks: { label: (c)=> c.dataset.label + ': ' + won(c.parsed.y*10000) } } },
+      scales: {
+        x: { grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63' } },
+        y: { beginAtZero: true, title: { display: true, text: '자산 (억원)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'억', color: '#5f6b63' } }
+      } }
+  });
+}
+function run2(){
+  const seed = +document.getElementById('tSeed').value;   // 만원
+  const p    = +document.getElementById('tWin').value/100;
+  const b    = +document.getElementById('tPay').value;
+  const freq = +document.getElementById('tFreq').value;
+  const save = +document.getElementById('tSave').value;    // 월 적립 만원
+  document.getElementById('toSeed').textContent = comma(seed) + '만';
+  document.getElementById('toWin').textContent  = Math.round(p*100) + '%';
+  document.getElementById('toPay').textContent  = (Math.round(b*10)/10).toFixed(1) + ' : 1';
+  document.getElementById('toFreq').textContent = freq + '회';
+  document.getElementById('toSave').textContent = comma(save) + '만';
+
+  const years = 5, sims = 1000, tradesPerYear = freq*250;
+  const cols = Array.from({length: years+1}, ()=>[]);
+  // 취업+적립 (월복리 6%)
+  const rm = 0.06/12;
+  const empSeries = [];
+  for (let y=0; y<=years; y++){
+    const m = y*12;
+    empSeries.push(seed*Math.pow(1+rm,m) + (m? save*((Math.pow(1+rm,m)-1)/rm) : 0));
+  }
+  const empFinal = empSeries[years];
+
+  let loss=0, beat=0;
+  for (let s=0; s<sims; s++){
+    let cap = seed, dead=false;
+    cols[0].push(cap);
+    for (let y=1; y<=years; y++){
+      if (!dead){
+        for (let t=0; t<tradesPerYear; t++){
+          cap *= oneTrade(p,b);
+          if (cap <= 0.0001){ cap=0; dead=true; break; }
+        }
+      }
+      cols[y].push(cap);
+    }
+    const fin = cols[years][s];
+    if (fin < seed) loss++;
+    if (fin > empFinal) beat++;
+  }
+  const med = cols.map(c=>pct(c,0.5));
+  const p10 = cols.map(c=>pct(c,0.1));
+  const p90 = cols.map(c=>pct(c,0.9));
+  const toEok = (v)=> Math.round(v/10000*100)/100;
+
+  chart2.data.labels = Array.from({length: years+1}, (_,i)=> i+'년');
+  chart2.data.datasets[0].data = p90.map(toEok);
+  chart2.data.datasets[1].data = p10.map(toEok);
+  chart2.data.datasets[2].data = med.map(toEok);
+  chart2.data.datasets[3].data = empSeries.map(toEok);
+  chart2.update();
+
+  document.getElementById('tMed').textContent  = won(med[years]);
+  document.getElementById('tEmp').textContent  = won(empFinal);
+  document.getElementById('tLoss').textContent = Math.round(loss/sims*100) + '%';
+
+  const v = document.getElementById('tVerdict');
+  const beatPct = Math.round(beat/sims*100);
+  if (beatPct >= 50){
+    v.style.background = 'var(--success-bg)'; v.style.color = 'var(--success-tx)';
+    v.textContent = '✓ 이 조건이면 1,000명 중 ' + beat + '명이 취업+적립을 이깁니다. 다만 이 정도 승률·손익비를 5년 내내 유지할 수 있을지 생각해보세요.';
+  } else {
+    v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+    v.textContent = '✗ 1,000명 중 단타로 취업+적립을 이긴 사람은 ' + beat + '명(' + beatPct + '%)뿐입니다. 나머지는 그냥 취업해서 적립한 사람보다 못했습니다.';
+  }
+}
+function update2(){ cancelAnimationFrame(raf2); raf2 = requestAnimationFrame(run2); }
+function build2(){
+  chart2 = buildBandChart('c2', '#185fa5', 'rgba(24,95,165,0.13)', '#0f6e56', '취업+적립', [6,5]);
+  ['tSeed','tWin','tPay','tFreq','tSave'].forEach(id => document.getElementById(id).addEventListener('input', update2));
+  run2();
+}
+
+/* ===================== ③ 단타로 생존 (파산) ===================== */
+let chart3 = null, built3 = false, raf3 = null;
+function run3(){
+  const seed   = +document.getElementById('vSeed').value;  // 만원
+  const living = +document.getElementById('vCost').value;  // 월 생활비 만원
+  const p      = +document.getElementById('vWin').value/100;
+  const b      = +document.getElementById('vPay').value;
+  document.getElementById('voSeed').textContent = comma(seed) + '만';
+  document.getElementById('voCost').textContent = comma(living) + '만';
+  document.getElementById('voWin').textContent  = Math.round(p*100) + '%';
+  document.getElementById('voPay').textContent  = (Math.round(b*10)/10).toFixed(1) + ' : 1';
+
+  const horizon = 120, sims = 1000, tpm = 21*10; // 월 210거래
+  const cols = Array.from({length: horizon+1}, ()=>[]);
+  const bankMonths = [];
+  let bank36=0, alive=0;
+  for (let s=0; s<sims; s++){
+    let cap = seed, dead=false, bm = horizon+1;
+    cols[0].push(cap);
+    for (let m=1; m<=horizon; m++){
+      if (!dead){
+        for (let t=0; t<tpm; t++) cap *= oneTrade(p,b);
+        cap -= living;
+        if (cap <= 0){ cap=0; dead=true; bm=m; }
+      }
+      cols[m].push(cap);
+    }
+    bankMonths.push(bm);
+    if (bm <= 36) bank36++;
+    if (bm > horizon) alive++;
+  }
+  const med = cols.map(c=>pct(c,0.5));
+  const p10 = cols.map(c=>pct(c,0.1));
+  const p90 = cols.map(c=>pct(c,0.9));
+  const toEok = (v)=> Math.round(v/10000*100)/100;
+  const seedEok = toEok(seed);
+
+  chart3.data.labels = Array.from({length: horizon+1}, (_,i)=> i);
+  chart3.data.datasets[0].data = p90.map(toEok);
+  chart3.data.datasets[1].data = p10.map(toEok);
+  chart3.data.datasets[2].data = med.map(toEok);
+  chart3.data.datasets[3].data = Array(horizon+1).fill(seedEok);
+  chart3.update();
+
+  const medSurv = pct(bankMonths, 0.5);
+  document.getElementById('vP36').textContent = Math.round(bank36/sims*100) + '%';
+  document.getElementById('vSurv').textContent = medSurv > horizon
+      ? '10년+'
+      : (medSurv >= 12 ? (Math.round(medSurv/12*10)/10) + '년' : Math.round(medSurv) + '개월');
+  document.getElementById('vAlive').textContent = Math.round(alive/sims*100) + '%';
+
+  const v = document.getElementById('vVerdict');
+  const aliveP = Math.round(alive/sims*100);
+  if (aliveP >= 50){
+    v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
+    v.textContent = '△ 이 조건이면 절반 이상이 10년을 버팁니다. 하지만 이는 승률·손익비를 10년 내내 흔들림 없이 유지한다는 비현실적 가정입니다. 슬라이더를 현실값으로 조금만 낮춰보세요.';
+  } else {
+    v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+    v.textContent = '✗ 1,000명 중 ' + (1000-alive) + '명이 10년 안에 파산했습니다. 소득 없이 생활비를 단타로 충당하면, 잠깐 벌어도 인출과 변동성이 계좌를 0으로 끌고 갑니다.';
+  }
+}
+function update3(){ cancelAnimationFrame(raf3); raf3 = requestAnimationFrame(run3); }
+function build3(){
+  chart3 = buildBandChart('c3', '#b23a2e', 'rgba(178,58,46,0.13)', '#5f6b63', '최초 시드', [4,4]);
+  chart3.options.scales.x.title = { display: true, text: '경과 (월)' };
+  chart3.options.scales.x.ticks.callback = (val) => (val % 12 === 0) ? (val/12) + '년' : '';
+  chart3.options.scales.x.ticks.autoSkip = false;
+  chart3.options.scales.x.ticks.maxRotation = 0;
+  ['vSeed','vCost','vWin','vPay'].forEach(id => document.getElementById(id).addEventListener('input', update3));
+  run3();
+}
+
+/* ===================== 탭 전환 ===================== */
+function showTab(name){
+  document.querySelectorAll('.panel-sec').forEach(s => s.style.display='none');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-'+name).style.display = '';
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name==='trade'   && !built2){ built2=true; build2(); }
+  if (name==='survive' && !built3){ built3=true; build3(); }
+}
+</script>
+</body>
+</html>
