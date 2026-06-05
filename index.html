@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>단타로 살 수 있을까 · 현실 시뮬레이터</title>
-<meta name="description" content="단타 vs 취업+적립 자산 비교, 그리고 단타 수익만으로 생활할 때의 파산 시뮬레이션. 슬라이더로 직접 확인해보세요.">
+<meta name="description" content="단타 vs 취업+적립 자산 비교, 단타 생존(파산) 시뮬, 취업 난이도·기회비용까지. 슬라이더로 직접 확인해보세요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="단타로 먹고살 수 있을까? · 현실 시뮬레이터">
+<meta property="og:description" content="단타 vs 취업+적립, 단타 생존(파산) 시뮬, 손실 복구의 수학, 전업 필요 시드, 취업의 숨은 자산까지 — 숫자로 확인해보세요.">
+<meta property="og:url" content="https://sung9155.github.io/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,6 +74,16 @@
   }
   .tab:hover { color: var(--ink); border-color: rgba(28,36,32,0.25); }
   .tab.active { color: #fff; background: var(--ink); border-color: var(--ink); }
+  .share-row { display: flex; align-items: center; gap: 12px; margin: 4px 0 -4px; flex-wrap: wrap;
+    opacity: 0; animation: rise .7s ease .24s forwards; }
+  #shareBtn {
+    font-family: 'Pretendard', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--green); background: var(--green-soft);
+    border: 1px solid rgba(15,110,86,0.25); border-radius: 99px;
+    padding: 7px 14px; cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  #shareBtn:hover { background: rgba(15,110,86,0.16); }
+  .share-hint { font-size: 12px; color: var(--muted); }
   .panel {
     background: var(--card); border: 1px solid var(--line); border-radius: 18px;
     padding: 28px; margin-top: 16px;
@@ -151,7 +167,15 @@
     <button class="tab active" id="tab-save"    onclick="showTab('save')">① 적립 비교</button>
     <button class="tab"        id="tab-trade"   onclick="showTab('trade')">② 단타 vs 취업+적립</button>
     <button class="tab"        id="tab-survive" onclick="showTab('survive')">③ 단타로 생존</button>
-    <button class="tab"        id="tab-employ"  onclick="showTab('employ')">④ 나이별 취업 난이도</button>
+    <button class="tab"        id="tab-employ"  onclick="showTab('employ')">④ 취업 난이도</button>
+    <button class="tab"        id="tab-cost"    onclick="showTab('cost')">⑤ 시간의 기회비용</button>
+    <button class="tab"        id="tab-math"    onclick="showTab('math')">⑥ 손실 복구의 수학</button>
+    <button class="tab"        id="tab-seed"    onclick="showTab('seed')">⑦ 전업 필요 시드</button>
+    <button class="tab"        id="tab-hidden"  onclick="showTab('hidden')">⑧ 취업의 숨은 자산</button>
+  </div>
+  <div class="share-row">
+    <button id="shareBtn" type="button">🔗 이 탭 링크 복사</button>
+    <span class="share-hint">지금 보는 탭이 그대로 열리는 링크를 복사합니다 (카톡 공유용)</span>
   </div>
 
   <!-- ================= ① 적립 비교 (기존) ================= -->
@@ -358,6 +382,198 @@
     </div>
     <div class="notes">
       <strong>실제 수치.</strong> 미취업 기간 분포(6개월 미만 40.7% · 6개월~1년 13.7% · 1~3년 27.1% · 3년 이상 18.5%)와 첫 취업까지 평균 소요기간 11.5개월(역대 최장, 대졸 8.3개월·고졸이하 17.6개월)은 <strong>통계청 2024년 5월 경제활동인구조사 청년층(15~29세) 부가조사</strong> 결과입니다. 신입 채용 마지노선 '평균 31세'는 <strong>진학사 캐치의 Z세대 2,492명 조사</strong>(마지노선이 있다 57%)에서 나온 수치입니다. 참고로 청년층 고용률은 46.9%, 20대 후반은 71.8%로, 30·40대(약 80%)에 비해 '진입' 자체가 가장 어려운 구간입니다. <strong>핵심:</strong> 중년의 높은 고용률은 일찍 직장에 진입해 경력을 쌓은 사람들의 몫입니다. 단타로 공백을 늘리면 그 진입 자체가 늦어지고, 3년 이상 쉰 18.5%의 장기 미취업 그룹에 가까워집니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ⑤ 시간의 기회비용 ================= -->
+  <section class="panel-sec sec-trade" id="sec-cost" style="display:none">
+  <div class="panel">
+    <div class="sec-title">그 시간에 알바만 했어도 — 기회비용</div>
+    <p class="sec-desc">단타에 쏟는 건 돈만이 아니라 시간입니다. 매일 차트를 보는 그 시간을 최저시급 알바로만 환산해도 얼마인지, 그리고 당신의 단타 '실효 시급'은 얼마인지 비교합니다.</p>
+    <div class="ctrl">
+      <label for="cHrs">하루 단타 시간</label>
+      <input type="range" id="cHrs" min="1" max="12" step="0.5" value="6">
+      <output id="coHrs">6시간</output>
+    </div>
+    <div class="ctrl">
+      <label for="cMon">단타 지속 기간</label>
+      <input type="range" id="cMon" min="1" max="60" step="1" value="24">
+      <output id="coMon">24개월</output>
+    </div>
+    <div class="ctrl">
+      <label for="cWage">알바 시급</label>
+      <input type="range" id="cWage" min="10320" max="30000" step="100" value="10320">
+      <output id="coWage">10,320원</output>
+    </div>
+    <div class="ctrl">
+      <label for="cPnl">그동안 단타 누적손익</label>
+      <input type="range" id="cPnl" min="-5000" max="5000" step="100" value="-500">
+      <output id="coPnl">-500만</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric base">
+        <div class="k">같은 시간 알바 환산</div>
+        <div class="v" id="cAlt">–</div>
+      </div>
+      <div class="metric bad">
+        <div class="k">내 단타 실효 시급</div>
+        <div class="v" id="cEff">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">놓친 차액(기회비용)</div>
+        <div class="v" id="cGap">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="cVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--green)"></span>알바 환산 소득</span>
+      <span><span class="swatch" style="background:var(--blue)"></span>실제 단타 손익</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c5" role="img" aria-label="알바 환산 소득과 단타 손익 비교"></canvas>
+    </div>
+    <div class="notes">
+      <strong>계산.</strong> 투입 시간 = 하루 시간 × 주 5일(월 약 21.7일) × 개월. 알바 환산 = 투입 시간 × 시급. 실효 시급 = 단타 누적손익 ÷ 투입 시간. 기본 시급은 <strong>2026년 최저임금 10,320원</strong>(고용노동부)입니다. <strong>핵심:</strong> 단타가 마이너스이거나 최저시급보다 못한 시간당 수익이라면, 같은 시간 알바가 명백히 낫습니다. '시급'으로 환산하면 단타의 노동 효율이 적나라하게 보입니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ⑥ 손실 복구의 수학 ================= -->
+  <section class="panel-sec sec-survive" id="sec-math" style="display:none">
+  <div class="panel">
+    <div class="sec-title">한 번 크게 잃으면 — 복구의 비대칭</div>
+    <p class="sec-desc">손실과 수익은 대칭이 아닙니다. −50%가 나면 +50%로는 본전이 안 되고, +100%를 벌어야 원금으로 돌아옵니다. 단타가 한 번의 큰 손실에서 좀처럼 못 빠져나오는 이유입니다.</p>
+    <div class="ctrl">
+      <label for="mLoss">한 번의 손실률</label>
+      <input type="range" id="mLoss" min="5" max="95" step="1" value="50">
+      <output id="moLoss">-50%</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric bad">
+        <div class="k">본전까지 필요 수익률</div>
+        <div class="v" id="mNeed">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">1,000만원이 남는 돈</div>
+        <div class="v" id="mLeft">–</div>
+      </div>
+      <div class="metric base">
+        <div class="k">그 돈으로 본전 만들려면</div>
+        <div class="v" id="mMul">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="mVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--red)"></span>본전 복구에 필요한 수익률</span>
+      <span><span class="swatch" style="background:var(--muted)"></span>현재 손실 지점</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c6" role="img" aria-label="손실률에 따라 본전 복구에 필요한 수익률 곡선"></canvas>
+    </div>
+    <div class="notes">
+      <strong>수학.</strong> 손실 L%를 본전으로 되돌리려면 필요한 수익률 = L ÷ (100−L) × 100. −10%는 +11%, −20%는 +25%, −50%는 +100%, −80%는 +400%, −90%는 +900%가 필요합니다. <strong>핵심:</strong> 손실이 커질수록 복구 난이도가 기하급수적으로 치솟습니다. 단타에서 한 번의 몰빵·물타기로 −50%를 넘기면, 그다음부터는 '대박'을 내야 겨우 본전이라 사실상 회복이 어려워집니다. 잃지 않는 것이 버는 것보다 중요한 이유입니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ⑦ 전업 필요 시드 ================= -->
+  <section class="panel-sec sec-employ" id="sec-seed" style="display:none">
+  <div class="panel">
+    <div class="sec-title">전업 트레이더로 먹고살려면 — 필요 시드 역산</div>
+    <p class="sec-desc">생활비를 투자수익으로 '안정적으로' 충당하려면 시드가 얼마나 있어야 할까요? 목표 생활비와 지속 가능한 연수익률을 넣어 역산해보고, 지금 시드로는 매달 얼마까지 꺼내 쓸 수 있는지 확인하세요.</p>
+    <div class="ctrl">
+      <label for="qCost">목표 월 생활비</label>
+      <input type="range" id="qCost" min="100" max="500" step="10" value="250">
+      <output id="qoCost">250만</output>
+    </div>
+    <div class="ctrl">
+      <label for="qRet">지속가능 연수익률</label>
+      <input type="range" id="qRet" min="3" max="12" step="0.5" value="6">
+      <output id="qoRet">6%</output>
+    </div>
+    <div class="ctrl">
+      <label for="qHave">현재 시드</label>
+      <input type="range" id="qHave" min="500" max="50000" step="500" value="3000">
+      <output id="qoHave">3,000만</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric bad">
+        <div class="k">필요 시드</div>
+        <div class="v" id="qNeed">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k">현재 시드로 월 인출 가능</div>
+        <div class="v" id="qCan">–</div>
+      </div>
+      <div class="metric base">
+        <div class="k">목표까지 부족분</div>
+        <div class="v" id="qShort">–</div>
+      </div>
+    </div>
+    <div class="verdict" id="qVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--gold)"></span>연수익률별 필요 시드</span>
+      <span><span class="swatch" style="background:var(--muted)"></span>현재 가정 지점</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c7" role="img" aria-label="연수익률에 따른 필요 시드 곡선"></canvas>
+    </div>
+    <div class="notes">
+      <strong>계산.</strong> 필요 시드 = 연 생활비 ÷ 연수익률(원금을 헐지 않고 수익만으로 충당하는 '안전 인출' 가정). 예: 월 250만원을 연 6%로 충당하려면 약 5억이 필요합니다. <strong>핵심:</strong> 작은 시드로 생활비를 충당하려면 비현실적으로 높은 '꾸준한' 수익률이 필요하고, 그 수익률을 변동성 큰 단타로 매달 안정적으로 내는 건 불가능에 가깝습니다(③ 탭의 파산 시뮬과 연결). 전업의 벽은 실력 이전에 시드 규모입니다.
+    </div>
+  </div>
+  </section>
+
+  <!-- ================= ⑧ 취업의 숨은 자산 ================= -->
+  <section class="panel-sec" id="sec-hidden" style="display:none">
+  <div class="panel">
+    <div class="sec-title">월급이 전부가 아니다 — 취업의 숨은 자산</div>
+    <p class="sec-desc">취업하면 통장에 찍히는 월급 외에, 회사가 당신의 미래에 매달 더 얹어주는 돈이 있습니다. 퇴직금과 4대보험 사용자 부담분입니다. 단타 무직에게는 이 전부가 0원입니다.</p>
+    <div class="ctrl">
+      <label for="hPay">세전 월급</label>
+      <input type="range" id="hPay" min="200" max="600" step="10" value="280">
+      <output id="hoPay">280만</output>
+    </div>
+    <div class="ctrl">
+      <label for="hYears">근속 기간</label>
+      <input type="range" id="hYears" min="1" max="15" step="1" value="5">
+      <output id="hoYears">5년</output>
+    </div>
+
+    <div class="metrics three">
+      <div class="metric base">
+        <div class="k">매달 회사가 더 얹는 돈</div>
+        <div class="v" id="hMonthly">–</div>
+      </div>
+      <div class="metric mine">
+        <div class="k" id="hCumK">N년 누적</div>
+        <div class="v" id="hCum">–</div>
+      </div>
+      <div class="metric bad">
+        <div class="k">단타 무직이 받는 것</div>
+        <div class="v">0원</div>
+      </div>
+    </div>
+    <div class="verdict" id="hVerdict"></div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--green)"></span>퇴직금</span>
+      <span><span class="swatch" style="background:var(--blue)"></span>국민연금(회사분)</span>
+      <span><span class="swatch" style="background:var(--gold)"></span>건강보험(회사분)</span>
+      <span><span class="swatch" style="background:var(--red)"></span>고용·산재(회사분)</span>
+    </div>
+    <div class="chart-box">
+      <canvas id="c8" role="img" aria-label="취업 시 회사가 부담하는 월별 숨은 혜택 구성"></canvas>
+    </div>
+    <div class="notes">
+      <strong>계산.</strong> 퇴직금은 1년 근속당 약 1개월분 임금이 적립되어 월급의 약 8.3%, 사용자 부담 4대보험은 국민연금 4.5% + 건강보험·장기요양 약 3.5% + 고용·산재 약 1.5%로 잡았습니다(국민연금공단·근로기준법, 2025~2026 기준). 본인 부담 국민연금 4.5%는 노후 연금으로 돌아옵니다. <strong>핵심:</strong> 월급 외에도 매달 임금의 약 17%가 당신의 미래(퇴직금·연금·의료·실업급여 자격)로 쌓입니다. 여기에 신용대출 가능, 실업급여 자격, 건강보험 부담 차이까지 더하면 격차는 더 벌어집니다. 단타 무직은 이 모두를 포기할 뿐 아니라, 국민연금·건강보험을 직접 내야 합니다.
     </div>
   </div>
   </section>
@@ -668,6 +884,198 @@ function build4(){
   run4();
 }
 
+/* ===================== ⑤ 시간의 기회비용 ===================== */
+let chart5 = null, built5 = false;
+function run5(){
+  const hrs  = +document.getElementById('cHrs').value;
+  const mon  = +document.getElementById('cMon').value;
+  const wage = +document.getElementById('cWage').value;
+  const pnl  = +document.getElementById('cPnl').value; // 만원
+  document.getElementById('coHrs').textContent  = (hrs%1===0?hrs:hrs.toFixed(1)) + '시간';
+  document.getElementById('coMon').textContent  = mon + '개월';
+  document.getElementById('coWage').textContent = comma(wage) + '원';
+  document.getElementById('coPnl').textContent  = (pnl>=0?'+':'') + comma(pnl) + '만';
+
+  const hoursTotal = hrs * 21.7 * mon;
+  const altMan = hoursTotal * wage / 10000;        // 알바 환산(만원)
+  const effWage = hoursTotal > 0 ? pnl*10000/hoursTotal : 0; // 단타 실효시급(원)
+  const gap = altMan - pnl;                         // 기회비용(만원)
+
+  chart5.data.datasets[0].data = [Math.round(altMan/10000*100)/100, Math.round(pnl/10000*100)/100];
+  chart5.update();
+
+  document.getElementById('cAlt').textContent = won(altMan);
+  document.getElementById('cEff').textContent = comma(Math.round(effWage)) + '원';
+  document.getElementById('cGap').textContent = won(gap);
+
+  const v = document.getElementById('cVerdict');
+  if (effWage < wage){
+    v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+    v.textContent = '✗ 같은 시간 최저시급 알바가 ' + won(gap) + ' 더 법니다. 당신의 단타 실효 시급은 ' + comma(Math.round(effWage)) + '원 — ' + (effWage<0?'시간을 쓸수록 돈을 잃는 ':'최저시급에도 못 미치는 ') + '노동입니다.';
+  } else {
+    v.style.background = 'var(--warn-bg)'; v.style.color = 'var(--warn-tx)';
+    v.textContent = '△ 지금 가정이라면 단타 실효 시급(' + comma(Math.round(effWage)) + '원)이 알바보다 높습니다. 다만 이 누적손익을 앞으로도 꾸준히 낼 수 있을지, 그리고 변동성을 견딜 수 있을지 따져보세요.';
+  }
+}
+function build5(){
+  chart5 = new Chart(document.getElementById('c5'), {
+    type: 'bar',
+    data: { labels: ['알바 환산 소득', '실제 단타 손익'], datasets: [
+      { label: '금액', data: [], backgroundColor: ['#0f6e56', '#185fa5'], borderRadius: 6, maxBarThickness: 110 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c)=> won(c.parsed.y*10000) } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#5f6b63' } },
+        y: { title: { display: true, text: '금액 (억원)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'억', color: '#5f6b63' } }
+      } }
+  });
+  ['cHrs','cMon','cWage','cPnl'].forEach(id => document.getElementById(id).addEventListener('input', run5));
+  run5();
+}
+
+/* ===================== ⑥ 손실 복구의 수학 ===================== */
+let chart6 = null, built6 = false;
+function run6(){
+  const loss = +document.getElementById('mLoss').value;
+  document.getElementById('moLoss').textContent = '-' + loss + '%';
+  const need = loss/(100-loss)*100;
+  const left = 1000 * (100-loss)/100; // 1000만원 중 남는 돈(만원)
+
+  const idx = chart6.data.labels.indexOf(loss);
+  chart6.data.datasets[1].data = chart6.data.labels.map((l)=> l===loss ? Math.round(need) : null);
+  chart6.update();
+
+  document.getElementById('mNeed').textContent = '+' + (need>=1000 ? comma(Math.round(need)) : Math.round(need)) + '%';
+  document.getElementById('mLeft').textContent = comma(Math.round(left)) + '만';
+  document.getElementById('mMul').textContent  = '×' + (Math.round((100/(100-loss))*100)/100);
+
+  const v = document.getElementById('mVerdict');
+  v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+  v.textContent = '−' + loss + '% 손실을 메우려면 +' + Math.round(need) + '%를 벌어야 본전입니다. 1,000만원이 ' + comma(Math.round(left)) + '만원으로 줄었을 때, 다시 1,000만원이 되려면 남은 돈을 ' + (Math.round((100/(100-loss))*100)/100) + '배로 불려야 합니다.';
+}
+function build6(){
+  const losses = Array.from({length: 19}, (_,i)=> 5+i*5); // 5..95
+  chart6 = new Chart(document.getElementById('c6'), {
+    type: 'line',
+    data: { labels: losses, datasets: [
+      { label: '필요 수익률', data: losses.map(l=> Math.round(l/(100-l)*100)), borderColor: '#b23a2e', backgroundColor: 'rgba(178,58,46,0.08)', borderWidth: 2.6, tension: 0.3, pointRadius: 0, fill: true },
+      { label: '현재 손실 지점', data: [], borderColor: '#5f6b63', backgroundColor: '#5f6b63', pointRadius: 7, pointHoverRadius: 8, showLine: false }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c)=> c.parsed.y==null?null : '손실 -'+c.label+'% → 본전까지 +'+c.parsed.y+'%' } } },
+      scales: {
+        x: { title: { display: true, text: '손실률 (%)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63', callback: (v,i)=> '-'+losses[i]+'%', maxTicksLimit: 10 } },
+        y: { beginAtZero: true, title: { display: true, text: '본전까지 필요 수익률 (%)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>'+'+v+'%', color: '#5f6b63' } }
+      } }
+  });
+  document.getElementById('mLoss').addEventListener('input', run6);
+  run6();
+}
+
+/* ===================== ⑦ 전업 필요 시드 ===================== */
+let chart7 = null, built7 = false;
+function run7(){
+  const cost = +document.getElementById('qCost').value;  // 월 만원
+  const ret  = +document.getElementById('qRet').value;   // %
+  const have = +document.getElementById('qHave').value;  // 만원
+  document.getElementById('qoCost').textContent = comma(cost) + '만';
+  document.getElementById('qoRet').textContent  = (ret%1===0?ret:ret.toFixed(1)) + '%';
+  document.getElementById('qoHave').textContent = comma(have) + '만';
+
+  const need = cost*12 / (ret/100);   // 만원
+  const can  = have*(ret/100)/12;     // 월 인출 가능(만원)
+  const shortAmt = Math.max(need - have, 0);
+
+  chart7.data.datasets[1].data = chart7.data.labels.map((r)=> r===ret ? Math.round(need/10000*100)/100 : null);
+  chart7.update();
+
+  document.getElementById('qNeed').textContent  = won(need);
+  document.getElementById('qCan').textContent   = comma(Math.round(can)) + '만/월';
+  document.getElementById('qShort').textContent = shortAmt<=0 ? '달성!' : '-' + won(shortAmt);
+
+  const v = document.getElementById('qVerdict');
+  if (have >= need){
+    v.style.background = 'var(--success-bg)'; v.style.color = 'var(--success-tx)';
+    v.textContent = '✓ 현재 시드로 목표 생활비를 충당할 수 있습니다. 다만 이는 매년 ' + ret + '%를 안정적으로 낸다는 가정이며, 단타의 변동성으로는 보장되지 않습니다.';
+  } else {
+    v.style.background = 'var(--danger-bg)'; v.style.color = 'var(--danger-tx)';
+    v.textContent = '✗ 월 ' + comma(cost) + '만원을 연 ' + ret + '%로 충당하려면 시드 약 ' + won(need) + '가 필요합니다. 현재 시드(' + won(have) + ')로는 월 ' + comma(Math.round(can)) + '만원밖에 못 꺼냅니다. 시드를 모으는 가장 확실한 길은 취업 소득입니다.';
+  }
+}
+function build7(){
+  const rets = [3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12];
+  chart7 = new Chart(document.getElementById('c7'), {
+    type: 'line',
+    data: { labels: rets, datasets: [
+      { label: '필요 시드', data: [], borderColor: '#b07d22', backgroundColor: 'rgba(176,125,34,0.08)', borderWidth: 2.6, tension: 0.3, pointRadius: 0, fill: true },
+      { label: '현재 가정', data: [], borderColor: '#5f6b63', backgroundColor: '#5f6b63', pointRadius: 7, pointHoverRadius: 8, showLine: false }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c)=> c.parsed.y==null?null : '연 '+c.label+'% → 필요 시드 '+won(c.parsed.y*10000) } } },
+      scales: {
+        x: { title: { display: true, text: '지속가능 연수익률 (%)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { color: '#5f6b63', callback: (v,i)=> rets[i]+'%', maxTicksLimit: 10 } },
+        y: { beginAtZero: true, title: { display: true, text: '필요 시드 (억원)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'억', color: '#5f6b63' } }
+      } }
+  });
+  // 필요 시드 곡선은 월 생활비에 따라 바뀌므로 run7에서 갱신
+  function refreshCurve(){
+    const cost = +document.getElementById('qCost').value;
+    chart7.data.datasets[0].data = rets.map(r => Math.round(cost*12/(r/100)/10000*100)/100);
+  }
+  ['qCost','qRet','qHave'].forEach(id => document.getElementById(id).addEventListener('input', ()=>{ refreshCurve(); run7(); }));
+  refreshCurve(); run7();
+}
+
+/* ===================== ⑧ 취업의 숨은 자산 ===================== */
+let chart8 = null, built8 = false;
+function run8(){
+  const pay   = +document.getElementById('hPay').value;   // 월 만원
+  const years = +document.getElementById('hYears').value;
+  document.getElementById('hoPay').textContent   = comma(pay) + '만';
+  document.getElementById('hoYears').textContent = years + '년';
+
+  const retire = pay/12;        // 퇴직금 적립
+  const np     = pay*0.045;     // 국민연금 회사분
+  const health = pay*0.03545;   // 건강보험+장기요양 회사분
+  const emp    = pay*0.015;     // 고용+산재 회사분
+  const total  = retire + np + health + emp;
+  const cum    = total*12*years;
+
+  chart8.data.datasets[0].data = [retire, np, health, emp].map(x=> Math.round(x*10)/10);
+  chart8.update();
+
+  document.getElementById('hMonthly').textContent = comma(Math.round(total)) + '만';
+  document.getElementById('hCumK').textContent = years + '년 누적';
+  document.getElementById('hCum').textContent  = won(cum);
+
+  const v = document.getElementById('hVerdict');
+  v.style.background = 'var(--success-bg)'; v.style.color = 'var(--success-tx)';
+  v.textContent = '월급 ' + comma(pay) + '만원이면 회사가 매달 약 ' + comma(Math.round(total)) + '만원(임금의 약 ' + Math.round(total/pay*100) + '%)을 당신의 미래에 더 넣습니다. ' + years + '년이면 약 ' + won(cum) + ' — 단타 무직에게는 0원이고, 오히려 국민연금·건강보험을 직접 내야 합니다.';
+}
+function build8(){
+  chart8 = new Chart(document.getElementById('c8'), {
+    type: 'bar',
+    data: { labels: ['퇴직금', '국민연금', '건강보험', '고용·산재'], datasets: [
+      { label: '월 적립(만원)', data: [], backgroundColor: ['#0f6e56','#185fa5','#b07d22','#b23a2e'], borderRadius: 6, maxBarThickness: 90 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c)=> '월 약 ' + (Math.round(c.parsed.y*10)/10) + '만원' } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#5f6b63' } },
+        y: { beginAtZero: true, title: { display: true, text: '월 적립액 (만원)' }, grid: { color: 'rgba(28,36,32,0.06)' }, ticks: { callback: (v)=>v+'만', color: '#5f6b63' } }
+      } }
+  });
+  ['hPay','hYears'].forEach(id => document.getElementById(id).addEventListener('input', run8));
+  run8();
+}
+
 /* ===================== 탭 전환 ===================== */
 function showTab(name){
   document.querySelectorAll('.panel-sec').forEach(s => s.style.display='none');
@@ -677,7 +1085,36 @@ function showTab(name){
   if (name==='trade'   && !built2){ built2=true; build2(); }
   if (name==='survive' && !built3){ built3=true; build3(); }
   if (name==='employ'  && !built4){ built4=true; build4(); }
+  if (name==='cost'    && !built5){ built5=true; build5(); }
+  if (name==='math'    && !built6){ built6=true; build6(); }
+  if (name==='seed'    && !built7){ built7=true; build7(); }
+  if (name==='hidden'  && !built8){ built8=true; build8(); }
+  try { history.replaceState(null, '', '#' + name); } catch(e) {}
 }
+
+/* ===================== 탭별 링크(딥링킹) ===================== */
+const TAB_NAMES = ['save','trade','survive','employ','cost','math','seed','hidden'];
+function openFromHash(){
+  const h = (location.hash || '').replace('#','');
+  showTab(TAB_NAMES.includes(h) ? h : 'save');
+}
+window.addEventListener('hashchange', openFromHash);
+// 현재 탭 링크 복사
+(function(){
+  const btn = document.getElementById('shareBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const url = location.origin + location.pathname + location.hash;
+    try {
+      await navigator.clipboard.writeText(url);
+      const old = btn.textContent; btn.textContent = '✓ 링크 복사됨!';
+      setTimeout(()=>{ btn.textContent = old; }, 1600);
+    } catch(e) {
+      prompt('이 링크를 복사하세요:', url);
+    }
+  });
+})();
+openFromHash();
 </script>
 </body>
 </html>
