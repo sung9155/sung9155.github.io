@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대출 상환 계산기 · 원리금균등·원금균등·만기일시</title>
+<meta name="description" content="대출금액·금리·기간·상환방식·거치기간·추가상환을 넣으면 매달 납입금과 잔금을 그래프와 상환표로 보여줍니다. 상환방식 3종 총이자 비교, CSV 내보내기 지원.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="대출 상환 계산기 · 매달 납입금과 잔금">
+<meta property="og:description" content="원리금균등·원금균등·만기일시 비교, 거치기간·추가상환 반영, 월별 상환표와 그래프.">
+<meta property="og:url" content="https://sung9155.github.io/loan.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏦</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html" aria-current="page">대출</a>
+      <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">대출 상환 계산기</h1>
+  <p class="page-sub">상환방식·거치기간·추가상환까지 반영해 매달 납입금과 잔금을 계산합니다. 입력하면 바로 갱신됩니다.</p>
+
+  <div class="grid grid-side">
+    <!-- ── 입력 ───────────────────────────────────────── -->
+    <section class="card" aria-label="대출 조건">
+      <h2>대출 조건</h2>
+
+      <div class="field">
+        <label for="amount">대출 금액 (원)</label>
+        <input type="number" id="amount" value="300000000" step="1000000" min="0">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-add="10000000">+1천만</button>
+          <button type="button" data-add="50000000">+5천만</button>
+          <button type="button" data-add="100000000">+1억</button>
+          <button type="button" data-set="0">0</button>
+        </div>
+        <div class="help" id="amountHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="rate">연 이자율 (%)</label>
+        <input type="number" id="rate" value="4.5" step="0.1" min="0" max="30">
+        <input type="range" id="rateRange" value="4.5" step="0.05" min="0" max="15" style="margin-top:8px">
+      </div>
+
+      <div class="field">
+        <label for="months">대출 기간 (개월)</label>
+        <input type="number" id="months" value="360" step="1" min="1" max="600">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-months="12">1년</button>
+          <button type="button" data-months="36">3년</button>
+          <button type="button" data-months="60">5년</button>
+          <button type="button" data-months="120">10년</button>
+          <button type="button" data-months="240">20년</button>
+          <button type="button" data-months="360">30년</button>
+        </div>
+        <div class="help" id="monthsHelp"></div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">상환 방식</span>
+        <div class="seg" id="method" data-value="equal">
+          <button type="button" data-v="equal">원리금균등</button>
+          <button type="button" data-v="principal">원금균등</button>
+          <button type="button" data-v="bullet">만기일시</button>
+        </div>
+        <div class="help" id="methodHelp"></div>
+      </div>
+
+      <details class="adv" open>
+        <summary>추가 조건</summary>
+        <div>
+          <div class="field">
+            <label for="grace">거치기간 (개월, 이자만 납부)</label>
+            <input type="number" id="grace" value="0" step="1" min="0">
+          </div>
+          <div class="field">
+            <label for="extra">매월 추가 원금상환 (원)</label>
+            <input type="number" id="extra" value="0" step="100000" min="0">
+            <div class="help">매달 정해진 납입금에 더해 원금을 더 갚습니다. 상환 기간이 줄어듭니다.</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── 결과 ───────────────────────────────────────── -->
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>요약 <span class="hint" id="summaryHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">첫 달 납입금</div><div class="v" id="firstPay">–</div><div class="u" id="firstPaySub"></div></div>
+          <div class="stat"><div class="k">총 이자</div><div class="v" id="totalInterest">–</div><div class="u" id="interestRatio"></div></div>
+          <div class="stat"><div class="k">총 상환액</div><div class="v" id="totalPay">–</div><div class="u">원금 + 이자</div></div>
+          <div class="stat"><div class="k">상환 완료</div><div class="v" id="payoff">–</div><div class="u" id="payoffSub"></div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="월별 납입 구성">
+        <h2>월별 납입 구성 <span class="hint">원금 · 이자</span></h2>
+        <div id="payChart"></div>
+      </section>
+
+      <section class="card" aria-label="잔금">
+        <h2>남은 원금(잔금)</h2>
+        <div id="balChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>상환 방식 비교 <span class="hint">같은 조건 · 같은 기간 기준</span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="cmpTable">
+        <thead><tr>
+          <th>방식</th><th>첫 달 납입금</th><th>마지막 달 납입금</th><th>총 이자</th><th>총 상환액</th><th>이자 비중</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      원리금균등은 매달 같은 금액을, 원금균등은 원금을 균등하게 갚아 초반 부담이 크고 총이자가 적습니다.
+      만기일시는 매달 이자만 내고 만기에 원금을 한 번에 갚아 총이자가 가장 큽니다.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>상환표
+      <span class="hint" id="rowsHint"></span>
+    </h2>
+    <div class="btn-row" style="margin-bottom:12px">
+      <div class="seg" id="tableView" data-value="month" style="flex:0 0 220px">
+        <button type="button" data-v="month">월별</button>
+        <button type="button" data-v="year">연도별</button>
+      </div>
+      <button class="btn" type="button" id="csvBtn" style="flex:0 0 auto">CSV 내보내기</button>
+    </div>
+    <div class="table-wrap">
+      <table id="schedTable">
+        <thead><tr>
+          <th>회차</th><th>납입금</th><th>원금</th><th>이자</th><th>누적 이자</th><th>잔금</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">월 복리(연이율 ÷ 12) 기준의 단순 계산입니다. 실제 상품은 일수 계산·수수료·중도상환수수료 등에 따라 달라집니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/loan.js"></script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 구매 시뮬레이터 · 0.1초 간격 실시간 등수</title>
+<meta name="description" content="구입 매수·자동/고정/반자동 번호를 정하고 0.1초 간격으로 로또를 사면 몇 등이 나오는지 실시간으로 집계합니다. 등수 분포, 누적 구입액 대비 당첨금, 이론 확률 대비 실측 확률까지.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="로또 구매 시뮬레이터 · 0.1초 간격 실시간 등수">
+<meta property="og:description" content="0.1초에 한 장씩. 자동·고정·반자동으로 사면 실제로 몇 등이 나올까?">
+<meta property="og:url" content="https://sung9155.github.io/lotto.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎱</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html" aria-current="page">로또</a>
+      <a href="loan.html">대출</a>
+      <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">로또 구매 시뮬레이터</h1>
+  <p class="page-sub">6/45 규칙 그대로. 정한 매수만큼 0.1초에 한 장씩 사면서 등수를 실시간 집계합니다.</p>
+
+  <div class="grid grid-side">
+    <!-- ── 설정 ───────────────────────────────────────── -->
+    <section class="card" aria-label="설정">
+      <h2>구매 설정</h2>
+
+      <div class="field">
+        <label for="qty">구입 매수</label>
+        <input type="number" id="qty" min="1" max="5000000" step="1" value="1000">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-qty="10">10장</button>
+          <button type="button" data-qty="100">100장</button>
+          <button type="button" data-qty="1000">1,000장</button>
+          <button type="button" data-qty="10000">1만장</button>
+          <button type="button" data-qty="100000">10만장</button>
+        </div>
+        <div class="help" id="qtyHelp">1,000장 = 100만원 · 0.1초 간격이면 약 1분 40초</div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">번호 선택 방식</span>
+        <div class="seg" id="pickMode" data-value="auto">
+          <button type="button" data-v="auto">자동(랜덤)</button>
+          <button type="button" data-v="manual">수동(고정)</button>
+          <button type="button" data-v="semi">반자동(혼합)</button>
+        </div>
+      </div>
+
+      <div class="field" id="fixedWrap" hidden>
+        <label for="fixedNums">고정 번호 <span class="t-muted" id="fixedRule"></span></label>
+        <div class="row">
+          <input type="text" id="fixedNums" placeholder="예: 1, 7, 12, 25, 33, 41" inputmode="numeric">
+          <button class="btn" type="button" id="fillRand" style="flex:0 0 auto">랜덤채우기</button>
+        </div>
+        <div class="help" id="fixedHelp">1~45 사이 서로 다른 숫자를 콤마로 구분해 입력하세요.</div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">추첨 방식</span>
+        <div class="seg" id="drawMode" data-value="perTicket">
+          <button type="button" data-v="perTicket">장마다 새 회차</button>
+          <button type="button" data-v="single">한 회차 고정</button>
+        </div>
+        <div class="help" id="drawHelp">장마다 새 당첨번호를 뽑습니다(여러 회차에 걸쳐 산 것과 동일).</div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">구매 간격</span>
+        <div class="seg" id="speed" data-value="100">
+          <button type="button" data-v="100">0.1초</button>
+          <button type="button" data-v="50">0.05초</button>
+          <button type="button" data-v="10">0.01초</button>
+          <button type="button" data-v="0">즉시</button>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" type="button" id="startBtn">시작</button>
+        <button class="btn" type="button" id="resetBtn">리셋</button>
+      </div>
+
+      <details class="adv" style="margin-top:14px">
+        <summary>당첨금 설정 (평균 추정치)</summary>
+        <div>
+          <div class="field">
+            <label for="price">1장 가격 (원)</label>
+            <input type="number" id="price" value="1000" min="0" step="100">
+          </div>
+          <div class="row">
+            <div class="field"><label for="p1">1등 (원)</label><input type="number" id="p1" value="2000000000" step="100000000"></div>
+            <div class="field"><label for="p2">2등 (원)</label><input type="number" id="p2" value="60000000" step="1000000"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="p3">3등 (원)</label><input type="number" id="p3" value="1500000" step="100000"></div>
+            <div class="field"><label for="p4">4등 (원)</label><input type="number" id="p4" value="50000" step="10000"></div>
+          </div>
+          <div class="field"><label for="p5">5등 (원)</label><input type="number" id="p5" value="5000" step="1000"></div>
+          <div class="help">실제 1~3등 당첨금은 회차별 판매액과 당첨자 수로 나뉘어 매번 달라집니다.</div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── 진행/결과 ───────────────────────────────────── -->
+    <div>
+      <section class="card" aria-label="진행 상황">
+        <h2>진행 <span class="hint" id="progText">대기 중</span></h2>
+        <div class="progress"><i id="progBar"></i></div>
+
+        <div style="margin-top:16px">
+          <div class="field-label">당첨 번호</div>
+          <div class="balls" id="winBalls"><span class="t-muted">시작 전</span></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="field-label">내 번호 <span class="t-muted" id="ticketNo"></span></div>
+          <div class="balls" id="myBalls"><span class="t-muted">시작 전</span></div>
+        </div>
+        <div style="margin-top:12px" id="hitLine" class="mono t-muted">일치 0개</div>
+      </section>
+
+      <section class="card" aria-label="집계">
+        <h2>집계</h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">최고 등수</div><div class="v" id="best">–</div><div class="u" id="bestSub">아직 당첨 없음</div></div>
+          <div class="stat"><div class="k">총 구입액</div><div class="v" id="spent">0원</div><div class="u" id="spentSub">0장</div></div>
+          <div class="stat"><div class="k">총 당첨금</div><div class="v" id="wonAmt">0원</div><div class="u" id="wonSub">당첨 0건</div></div>
+          <div class="stat" id="netStat"><div class="k">손익</div><div class="v" id="net">0원</div><div class="u" id="roi">회수율 –</div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="등수별 당첨금">
+        <h2>등수별 당첨금 합계 <span class="hint">막대에 마우스를 올리면 상세</span></h2>
+        <div id="rankChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <section class="card">
+      <h2>누적 구입액 vs 누적 당첨금</h2>
+      <div id="cumChart"></div>
+      <p class="note">기댓값상 회수율은 약 50% 안팎입니다(판매액의 절반이 당첨금 재원). 오래 살수록 곡선은 벌어집니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>이론 확률 vs 실측</h2>
+      <div class="table-wrap" style="max-height:none">
+        <table id="probTable">
+          <thead><tr>
+            <th>등수</th><th>이론 확률</th><th>기대 당첨</th><th>실제 당첨</th><th>실측 확률</th><th>당첨금 합계</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>당첨 기록 <span class="hint">5등 이상, 최근 200건</span></h2>
+    <div class="table-wrap log-list">
+      <table id="logTable">
+        <thead><tr><th>장</th><th>등수</th><th>내 번호</th><th>일치</th><th>당첨금</th></tr></thead>
+        <tbody><tr><td colspan="5" class="t-muted">아직 당첨 기록이 없습니다.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">난수는 브라우저의 <code>crypto.getRandomValues</code>를 사용합니다. 실제 추첨과 무관한 시뮬레이션입니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/lotto.js"></script>
+</body>
+</html>
