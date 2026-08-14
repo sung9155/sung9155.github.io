@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>적금·예금 복리 계산기 · 만기 수령액</title>
+<meta name="description" content="월 적립액·초기 예치금·금리·기간을 넣으면 만기 수령액과 이자, 이자소득세 15.4%까지 계산합니다. 단리와 월복리 비교, 목표 금액 도달 시점, 월별 표와 그래프.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="적금·예금 복리 계산기">
+<meta property="og:description" content="단리 vs 월복리, 세후 실수령액, 목표 금액 도달 시점까지 한 화면에.">
+<meta property="og:url" content="https://sung9155.github.io/savings.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐖</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html" aria-current="page">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">적금·예금 복리 계산기</h1>
+  <p class="page-sub">월 적립과 초기 예치금을 함께 넣을 수 있습니다. 이자소득세와 단리·복리 차이까지 계산합니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>저축 조건</h2>
+
+      <div class="field">
+        <label for="monthly">월 적립액 (원)</label>
+        <input type="number" id="monthly" value="500000" step="100000" min="0">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-m="100000">10만</button>
+          <button type="button" data-m="300000">30만</button>
+          <button type="button" data-m="500000">50만</button>
+          <button type="button" data-m="1000000">100만</button>
+          <button type="button" data-m="0">0 (예금만)</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="initial">초기 예치금 (원)</label>
+        <input type="number" id="initial" value="0" step="1000000" min="0">
+        <div class="help" id="initialHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="rate">연 이율 (%)</label>
+        <input type="number" id="rate" value="3.5" step="0.1" min="0" max="30">
+        <input type="range" id="rateRange" value="3.5" step="0.05" min="0" max="12" style="margin-top:8px">
+      </div>
+
+      <div class="field">
+        <label for="months">기간 (개월)</label>
+        <input type="number" id="months" value="36" step="1" min="1" max="600">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-months="12">1년</button>
+          <button type="button" data-months="24">2년</button>
+          <button type="button" data-months="36">3년</button>
+          <button type="button" data-months="60">5년</button>
+          <button type="button" data-months="120">10년</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">이자 방식</span>
+        <div class="seg" id="method" data-value="compound">
+          <button type="button" data-v="compound">월복리</button>
+          <button type="button" data-v="simple">단리</button>
+        </div>
+        <div class="help" id="methodHelp"></div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">이자 과세</span>
+        <div class="seg" id="tax" data-value="15.4">
+          <button type="button" data-v="15.4">일반 15.4%</button>
+          <button type="button" data-v="9.5">세금우대 9.5%</button>
+          <button type="button" data-v="0">비과세</button>
+        </div>
+      </div>
+
+      <details class="adv" open>
+        <summary>추가 조건</summary>
+        <div>
+          <div class="field">
+            <label for="raise">매년 적립액 인상률 (%)</label>
+            <input type="number" id="raise" value="0" step="1" min="0" max="50">
+            <div class="help">1년마다 월 적립액을 이 비율만큼 올립니다.</div>
+          </div>
+          <div class="field">
+            <label for="target">목표 금액 (원, 0이면 사용 안 함)</label>
+            <input type="number" id="target" value="0" step="10000000" min="0">
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>만기 요약 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">세후 수령액</div><div class="v" id="netTotal">–</div><div class="u" id="netSub"></div></div>
+          <div class="stat"><div class="k">납입 원금</div><div class="v" id="principal">–</div><div class="u" id="principalSub"></div></div>
+          <div class="stat good"><div class="k">세전 이자</div><div class="v" id="interest">–</div><div class="u" id="taxSub"></div></div>
+          <div class="stat"><div class="k">실효 수익률</div><div class="v" id="yield">–</div><div class="u">세후 · 연 환산</div></div>
+        </div>
+        <div class="note" id="targetNote" hidden></div>
+      </section>
+
+      <section class="card" aria-label="자산 성장">
+        <h2>납입 원금 vs 평가액</h2>
+        <div id="growChart"></div>
+      </section>
+
+      <section class="card" aria-label="이자 비교">
+        <h2>단리 vs 월복리 <span class="hint">같은 조건 기준</span></h2>
+        <div class="table-wrap" style="max-height:none">
+          <table id="cmpTable">
+            <thead><tr><th>방식</th><th>세전 이자</th><th>이자소득세</th><th>세후 수령액</th><th>원금 대비</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>월별 내역 <span class="hint" id="rowsHint"></span></h2>
+    <div class="btn-row" style="margin-bottom:12px">
+      <div class="seg" id="tableView" data-value="month" style="flex:0 0 220px">
+        <button type="button" data-v="month">월별</button>
+        <button type="button" data-v="year">연도별</button>
+      </div>
+      <button class="btn" type="button" id="csvBtn" style="flex:0 0 auto">CSV 내보내기</button>
+    </div>
+    <div class="table-wrap">
+      <table id="schedTable">
+        <thead><tr><th>회차</th><th>납입액</th><th>누적 원금</th><th>누적 이자</th><th>평가액(세전)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">이자소득세는 만기 시 전체 이자에 일괄 적용해 계산합니다. 실제 상품은 이자 지급 시점·우대금리 조건에 따라 달라집니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/savings.js"></script>
+</body>
+</html>

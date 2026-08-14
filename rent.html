@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전세 vs 월세 비교 시뮬레이터</title>
+<meta name="description" content="전세대출 이자와 보증금의 기회비용, 월세와 월세 세액공제까지 반영해 어느 쪽이 월 얼마나 유리한지 비교합니다. 누적 비용 그래프와 전월세 전환율 계산 포함.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="전세 vs 월세 비교 시뮬레이터">
+<meta property="og:description" content="대출이자 + 묶인 돈의 기회비용까지 계산해서 진짜 월 주거비를 비교.">
+<meta property="og:url" content="https://sung9155.github.io/rent.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html" aria-current="page">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">전세 vs 월세 비교</h1>
+  <p class="page-sub">대출이자에 더해 <b>묶인 자기자본의 기회비용</b>까지 계산해야 진짜 주거비가 나옵니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>조건</h2>
+
+      <div class="field">
+        <span class="field-label">전세</span>
+        <label for="jeonseDeposit">전세 보증금 (원)</label>
+        <input type="number" id="jeonseDeposit" value="300000000" step="10000000" min="0">
+        <div class="help" id="jdHelp"></div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="jeonseLoan">전세대출 (원)</label>
+          <input type="number" id="jeonseLoan" value="200000000" step="10000000" min="0">
+        </div>
+        <div class="field">
+          <label for="jeonseRate">대출 금리 (%)</label>
+          <input type="number" id="jeonseRate" value="3.8" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:18px">
+        <span class="field-label">월세</span>
+        <label for="rentDeposit">월세 보증금 (원)</label>
+        <input type="number" id="rentDeposit" value="30000000" step="10000000" min="0">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="rentMonthly">월세 (원/월)</label>
+          <input type="number" id="rentMonthly" value="1000000" step="100000" min="0">
+        </div>
+        <div class="field">
+          <label for="rentLoan">보증금 대출 (원)</label>
+          <input type="number" id="rentLoan" value="0" step="10000000" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label for="rentRate">보증금 대출 금리 (%)</label>
+        <input type="number" id="rentRate" value="4.5" step="0.1" min="0">
+      </div>
+
+      <div class="field" style="margin-top:18px">
+        <label for="opp">자기자본 기회비용 수익률 (연 %)</label>
+        <input type="number" id="opp" value="3.5" step="0.1" min="0">
+        <input type="range" id="oppRange" value="3.5" step="0.1" min="0" max="12" style="margin-top:8px">
+        <div class="help">보증금으로 묶인 내 돈을 예금·투자했다면 벌었을 수익률입니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="months">비교 기간 (개월)</label>
+        <input type="number" id="months" value="24" step="1" min="1" max="600">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-months="12">1년</button>
+          <button type="button" data-months="24">2년</button>
+          <button type="button" data-months="48">4년</button>
+          <button type="button" data-months="120">10년</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">월세 세액공제</span>
+        <div class="seg" id="taxCredit" data-value="0">
+          <button type="button" data-v="0">적용 안 함</button>
+          <button type="button" data-v="15">15%</button>
+          <button type="button" data-v="17">17%</button>
+        </div>
+        <div class="help">총급여 5,500만원 이하 17%, 8,000만원 이하 15%. 연 월세액 1,000만원 한도.</div>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>월 주거비 비교 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">유리한 쪽</div><div class="v" id="winner">–</div><div class="u" id="winnerSub"></div></div>
+          <div class="stat"><div class="k">전세 월 비용</div><div class="v" id="jeonseCost">–</div><div class="u" id="jeonseSub"></div></div>
+          <div class="stat"><div class="k">월세 월 비용</div><div class="v" id="rentCost">–</div><div class="u" id="rentSub"></div></div>
+          <div class="stat"><div class="k">기간 총 차액</div><div class="v" id="gap">–</div><div class="u" id="gapSub"></div></div>
+        </div>
+        <div class="note" id="convNote"></div>
+      </section>
+
+      <section class="card" aria-label="비용 구성">
+        <h2>월 비용 구성 <span class="hint">대출이자 · 기회비용 · 월세</span></h2>
+        <div id="mixChart"></div>
+      </section>
+
+      <section class="card" aria-label="누적 비용">
+        <h2>누적 주거비</h2>
+        <div id="cumChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>항목별 비교</h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="detailTable">
+        <thead><tr><th>항목</th><th>전세 (월)</th><th>월세 (월)</th><th>차이</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      보증금은 계약 종료 시 돌려받는 돈이라 <b>비용이 아니라 기회비용</b>으로 계산합니다.
+      이사비·중개수수료·관리비 차이, 전세보증금 미반환 위험, 월세 인상 가능성은 반영하지 않았습니다.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">전월세 전환율이 기회비용 수익률보다 높으면 전세가, 낮으면 월세가 유리해지는 구조입니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/rent.js"></script>
+</body>
+</html>

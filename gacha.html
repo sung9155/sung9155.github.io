@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가챠 확률 시뮬레이터 · 천장까지 얼마나 들까</title>
+<meta name="description" content="뽑기 확률·천장·픽업(50:50)·목표 개수를 넣고 1만 번 시뮬레이션해서 평균 뽑기 횟수와 비용, 백분위, n회 이내 달성 확률을 계산합니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="가챠 확률 시뮬레이터">
+<meta property="og:description" content="0.6% 확률에 천장 90회. 실제로 얼마나 써야 나올까?">
+<meta property="og:url" content="https://sung9155.github.io/gacha.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎰</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html" aria-current="page">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">가챠 확률 시뮬레이터</h1>
+  <p class="page-sub">천장과 픽업(50:50)까지 반영해 목표를 얻기까지 필요한 뽑기 횟수 분포를 구합니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>가챠 설정</h2>
+
+      <div class="field">
+        <label for="prob">뽑기 확률 (%)</label>
+        <input type="number" id="prob" value="0.6" step="0.1" min="0.001" max="100">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-p="0.6">0.6%</button>
+          <button type="button" data-p="1.5">1.5%</button>
+          <button type="button" data-p="3">3%</button>
+          <button type="button" data-p="5">5%</button>
+          <button type="button" data-p="10">10%</button>
+        </div>
+        <div class="help" id="probHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="pity">천장 (회, 0이면 없음)</label>
+        <input type="number" id="pity" value="90" step="1" min="0" max="1000">
+        <div class="help">이 횟수에 도달하면 확정 획득하고 카운터가 초기화됩니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="pickup">픽업 성공률 (%)</label>
+        <input type="number" id="pickup" value="50" step="5" min="1" max="100">
+        <div class="help">획득했을 때 원하는 대상일 확률. 실패하면 다음 획득은 확정(픽뚫 보정)입니다. 100%면 보정 없음.</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="target">목표 개수</label>
+          <input type="number" id="target" value="1" step="1" min="1" max="20">
+        </div>
+        <div class="field">
+          <label for="cost">1회 비용 (원)</label>
+          <input type="number" id="cost" value="3000" step="100" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="budget">내 예산 (원, 0이면 사용 안 함)</label>
+        <input type="number" id="budget" value="300000" step="50000" min="0">
+      </div>
+
+      <div class="field">
+        <label for="sims">시뮬 횟수</label>
+        <select id="sims">
+          <option value="5000">5,000회</option>
+          <option value="20000" selected>20,000회</option>
+          <option value="100000">100,000회</option>
+        </select>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" type="button" id="runBtn">다시 시뮬레이션</button>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>결과 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">평균 뽑기</div><div class="v" id="meanPulls">–</div><div class="u" id="meanCost"></div></div>
+          <div class="stat"><div class="k">중앙값</div><div class="v" id="medPulls">–</div><div class="u" id="medCost"></div></div>
+          <div class="stat"><div class="k">운 나쁜 10%</div><div class="v" id="p90Pulls">–</div><div class="u" id="p90Cost"></div></div>
+          <div class="stat" id="budgetStat"><div class="k">예산 내 성공률</div><div class="v" id="budgetRate">–</div><div class="u" id="budgetSub"></div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="달성 확률">
+        <h2>n회 이내 목표 달성 확률</h2>
+        <div id="cdfChart"></div>
+      </section>
+
+      <section class="card" aria-label="분포">
+        <h2>필요 뽑기 횟수 분포</h2>
+        <div id="histChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>백분위 표 <span class="hint">이 횟수 안에 끝날 확률</span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="pctTable">
+        <thead><tr><th>백분위</th><th>뽑기 횟수</th><th>비용</th><th>의미</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      천장이 있으면 최악의 경우가 잘리지만, 픽업 실패(픽뚫)가 있으면 최악은 천장의 2배까지 늘어납니다.
+      확률은 매 뽑기마다 독립이며, 앞에서 많이 실패했다고 다음 확률이 올라가지 않습니다(천장 카운터 제외).
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">실제 게임의 소프트 천장(확률 상승 구간), 한정 픽업 규칙, 중복 보상 등은 반영하지 않았습니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/gacha.js"></script>
+</body>
+</html>

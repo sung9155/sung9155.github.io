@@ -86,14 +86,20 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid var(--border);
 }
 .site-header .wrap {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: 12px;
   height: 56px;
 }
-.brand { font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
+.brand { font-weight: 700; letter-spacing: -.01em; color: var(--ink); flex: none; }
 .brand:hover { text-decoration: none; }
-.nav { display: flex; gap: 4px; margin-left: auto; align-items: center; }
+.nav {
+  display: flex; gap: 2px; margin-left: auto; align-items: center;
+  overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  max-width: 100%; padding: 2px;
+}
+.nav::-webkit-scrollbar { display: none; }
 .nav a {
-  color: var(--ink-2); padding: 6px 10px; border-radius: 8px; font-size: 14px;
+  color: var(--ink-2); padding: 6px 9px; border-radius: 8px; font-size: 13.5px;
+  white-space: nowrap;
 }
 .nav a:hover { background: var(--surface-2); text-decoration: none; }
 .nav a[aria-current="page"] { color: var(--ink); background: var(--surface-2); font-weight: 600; }
@@ -101,7 +107,7 @@ a:hover { text-decoration: underline; }
 .theme-btn {
   border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
   width: 34px; height: 34px; border-radius: 9px; cursor: pointer; font-size: 15px;
-  display: grid; place-items: center;
+  display: grid; place-items: center; flex: none; margin-left: 8px;
 }
 .theme-btn:hover { color: var(--ink); }
 

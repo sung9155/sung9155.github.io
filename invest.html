@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>적립식 vs 거치식 투자 시뮬레이터</title>
+<meta name="description" content="같은 시장 경로에서 목돈을 한 번에 넣는 거치식과 나눠 넣는 적립식(분할매수)을 1,000회 몬테카를로로 비교합니다. 승률, 중앙값 경로, 최종 금액 분포까지.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="적립식 vs 거치식 투자 시뮬레이터">
+<meta property="og:description" content="목돈을 한 번에? 나눠서? 같은 시장에서 1,000번 돌려 비교.">
+<meta property="og:url" content="https://sung9155.github.io/invest.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html" aria-current="page">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">적립식 vs 거치식</h1>
+  <p class="page-sub">같은 시장 경로를 두 전략에 똑같이 적용해 비교합니다. 조건이 같아야 비교가 됩니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>조건</h2>
+
+      <div class="field">
+        <label for="total">총 투자금 (원)</label>
+        <input type="number" id="total" value="120000000" step="10000000" min="0">
+        <div class="help" id="totalHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="months">분할 기간 (개월)</label>
+        <input type="number" id="months" value="12" step="1" min="1" max="600">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-months="6">6개월</button>
+          <button type="button" data-months="12">12개월</button>
+          <button type="button" data-months="24">24개월</button>
+          <button type="button" data-months="36">36개월</button>
+        </div>
+        <div class="help" id="monthsHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="horizon">평가 시점 (개월)</label>
+        <input type="number" id="horizon" value="60" step="1" min="1" max="600">
+        <div class="help">분할이 끝난 뒤에도 이 시점까지 계속 보유합니다.</div>
+      </div>
+
+      <div class="row">
+        <div class="field"><label for="ret">기대 수익률 (연 %)</label><input type="number" id="ret" value="8" step="0.5"></div>
+        <div class="field"><label for="vol">변동성 (연 %)</label><input type="number" id="vol" value="18" step="1" min="0"></div>
+      </div>
+
+      <div class="row">
+        <div class="field"><label for="cash">대기자금 이율 (연 %)</label><input type="number" id="cash" value="3" step="0.1" min="0"></div>
+        <div class="field"><label for="sims">시뮬 횟수</label>
+          <select id="sims">
+            <option value="500">500회</option>
+            <option value="2000" selected>2,000회</option>
+            <option value="10000">10,000회</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" type="button" id="runBtn">다시 시뮬레이션</button>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>결과 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">거치식 승률</div><div class="v" id="winRate">–</div><div class="u" id="winSub"></div></div>
+          <div class="stat"><div class="k">거치식 중앙값</div><div class="v" id="lumpMed">–</div><div class="u" id="lumpSub"></div></div>
+          <div class="stat"><div class="k">적립식 중앙값</div><div class="v" id="dcaMed">–</div><div class="u" id="dcaSub"></div></div>
+          <div class="stat"><div class="k">최악 구간 차이</div><div class="v" id="worstGap">–</div><div class="u">하위 10% 기준</div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="중앙값 경로">
+        <h2>중앙값 자산 경로</h2>
+        <div id="pathChart"></div>
+      </section>
+
+      <section class="card" aria-label="최종 금액 분포">
+        <h2>최종 금액 누적 분포 <span class="hint">가로축 금액 이하일 확률</span></h2>
+        <div id="cdfChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>통계 비교</h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="statTable">
+        <thead><tr><th>지표</th><th>거치식(한 번에)</th><th>적립식(분할)</th><th>차이</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      기대수익률이 양수면 시장에 오래 노출된 거치식이 평균적으로 유리하고, 적립식은 하락장에서
+      손실 폭을 줄여 <b>결과의 분산</b>을 낮춥니다. 승률과 하위 10% 값을 같이 보세요.
+      수익률은 매달 정규분포로 뽑은 가정값이며 실제 시장의 급락·연속성은 반영하지 않습니다.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">투자 자문이 아닌 가정 기반 시뮬레이션입니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/invest.js"></script>
+</body>
+</html>

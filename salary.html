@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연봉 실수령액 계산기 · 4대보험·소득세 공제 후</title>
+<meta name="description" content="연봉과 부양가족 수를 넣으면 국민연금·건강보험·장기요양·고용보험과 소득세·지방소득세를 뺀 월 실수령액을 계산합니다. 공제 항목별 비중과 연봉 구간별 실수령액 곡선까지.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="연봉 실수령액 계산기">
+<meta property="og:description" content="4대보험과 세금 빼고 통장에 실제로 꽂히는 금액은 얼마?">
+<meta property="og:url" content="https://sung9155.github.io/salary.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💵</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html" aria-current="page">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">연봉 실수령액 계산기</h1>
+  <p class="page-sub">4대보험과 소득세를 뺀 월 실수령액을 추정합니다. 요율은 직접 수정할 수 있습니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>급여 조건</h2>
+
+      <div class="field">
+        <label for="annual">연봉 (원, 세전)</label>
+        <input type="number" id="annual" value="50000000" step="1000000" min="0">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-a="30000000">3천만</button>
+          <button type="button" data-a="40000000">4천만</button>
+          <button type="button" data-a="50000000">5천만</button>
+          <button type="button" data-a="70000000">7천만</button>
+          <button type="button" data-a="100000000">1억</button>
+        </div>
+        <div class="help" id="annualHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="nontax">월 비과세액 (원)</label>
+        <input type="number" id="nontax" value="200000" step="50000" min="0">
+        <div class="help">식대는 월 20만원까지 비과세입니다. 차량유지비 등이 있으면 더하세요.</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="family">부양가족 수 (본인 포함)</label>
+          <input type="number" id="family" value="1" step="1" min="1" max="10">
+        </div>
+        <div class="field">
+          <label for="children">20세 이하 자녀 수</label>
+          <input type="number" id="children" value="0" step="1" min="0" max="10">
+        </div>
+      </div>
+
+      <details class="adv">
+        <summary>보험 요율 · 기준 (직접 수정)</summary>
+        <div>
+          <div class="row">
+            <div class="field"><label for="rPension">국민연금 (%)</label><input type="number" id="rPension" value="4.5" step="0.05"></div>
+            <div class="field"><label for="rHealth">건강보험 (%)</label><input type="number" id="rHealth" value="3.545" step="0.005"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="rCare">장기요양 (건보료의 %)</label><input type="number" id="rCare" value="12.95" step="0.05"></div>
+            <div class="field"><label for="rEmploy">고용보험 (%)</label><input type="number" id="rEmploy" value="0.9" step="0.05"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="pensionMax">연금 기준소득 상한 (원/월)</label><input type="number" id="pensionMax" value="6370000" step="10000"></div>
+            <div class="field"><label for="pensionMin">연금 기준소득 하한 (원/월)</label><input type="number" id="pensionMin" value="400000" step="10000"></div>
+          </div>
+          <div class="help">요율은 매년 바뀝니다. 최신 고시 요율로 바꿔서 계산하세요.</div>
+        </div>
+      </details>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>실수령액 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">월 실수령액</div><div class="v" id="monthlyNet">–</div><div class="u" id="monthlyNetSub"></div></div>
+          <div class="stat"><div class="k">연 실수령액</div><div class="v" id="annualNet">–</div><div class="u">세후 기준</div></div>
+          <div class="stat bad"><div class="k">월 공제 합계</div><div class="v" id="monthlyDeduct">–</div><div class="u" id="deductRate"></div></div>
+          <div class="stat"><div class="k">4대보험 / 세금</div><div class="v" id="splitVal">–</div><div class="u">월 기준</div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="공제 항목">
+        <h2>월 공제 항목 <span class="hint">막대에 마우스를 올리면 상세</span></h2>
+        <div id="deductChart"></div>
+      </section>
+
+      <section class="card" aria-label="구간별">
+        <h2>연봉 구간별 월 실수령액</h2>
+        <div id="curveChart"></div>
+        <p class="note">같은 조건(비과세·부양가족)으로 연봉만 바꿨을 때의 월 실수령액입니다.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>공제 내역 <span class="hint">추정치</span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="detailTable">
+        <thead><tr><th>항목</th><th>월</th><th>연</th><th>비중(연봉 대비)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      소득세는 근로소득공제 → 인적공제·보험료공제 → 종합소득세율 → 근로소득세액공제·자녀세액공제 순으로
+      계산한 <b>연간 추정치</b>를 12로 나눈 값입니다. 실제 매월 원천징수액은 간이세액표를 따르고,
+      의료비·기부금·연금저축 등 다른 공제는 반영하지 않았으므로 연말정산 결과와 차이가 납니다.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">요율·공제 기준은 매년 바뀝니다. 정확한 금액은 국세청 홈택스 또는 회사 급여 담당 부서에서 확인하세요.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/salary.js"></script>
+</body>
+</html>

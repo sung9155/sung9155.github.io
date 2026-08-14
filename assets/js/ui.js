@@ -36,10 +36,10 @@
 
   function won(n) { return comma(n) + '원'; }
 
-  /* 1234567890 → "12억 3,456만원" (rounded to 만 단위) */
+  /* 1234567890 → "12억 3,456만원". 100만원 미만은 원 단위 그대로 표시 */
   function korWon(n) {
     var neg = n < 0; n = Math.abs(Math.round(n));
-    if (n < 10000) return (neg ? '-' : '') + comma(n) + '원';
+    if (n < 1000000) return (neg ? '-' : '') + comma(n) + '원';
     var eok = Math.floor(n / 100000000);
     var man = Math.floor((n % 100000000) / 10000);
     var out = [];

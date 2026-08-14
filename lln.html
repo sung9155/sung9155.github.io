@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>큰 수의 법칙 시뮬레이터 · 동전과 주사위</title>
+<meta name="description" content="동전과 주사위를 실시간으로 던지며 관측 비율이 이론 확률로 수렴하는 과정을 그래프로 봅니다. 최장 연속 기록과 도박사의 오류까지 확인할 수 있습니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="큰 수의 법칙 시뮬레이터">
+<meta property="og:description" content="던질수록 이론값에 수렴한다. 근데 편차는 오히려 커진다?">
+<meta property="og:url" content="https://sung9155.github.io/lln.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html" aria-current="page">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">큰 수의 법칙</h1>
+  <p class="page-sub">던질수록 <b>비율</b>은 이론값에 붙지만 <b>횟수 차이</b>는 오히려 벌어집니다. 직접 확인해 보세요.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="설정">
+      <h2>실험 설정</h2>
+
+      <div class="field">
+        <span class="field-label">실험</span>
+        <div class="seg" id="mode" data-value="coin">
+          <button type="button" data-v="coin">동전</button>
+          <button type="button" data-v="dice">주사위</button>
+        </div>
+      </div>
+
+      <div class="field" id="coinWrap">
+        <label for="pHead">앞면 확률 (%)</label>
+        <input type="number" id="pHead" value="50" step="1" min="1" max="99">
+        <input type="range" id="pRange" value="50" step="1" min="1" max="99" style="margin-top:8px">
+        <div class="help">50%가 아니면 편향된 동전입니다.</div>
+      </div>
+
+      <div class="field" id="diceWrap" hidden>
+        <label for="faces">면 수</label>
+        <input type="number" id="faces" value="6" step="1" min="2" max="20">
+        <div class="help">각 면이 나올 확률은 1/면수로 동일합니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="trials">총 시행 횟수</label>
+        <input type="number" id="trials" value="1000" step="100" min="1" max="10000000">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-t="100">100</button>
+          <button type="button" data-t="1000">1,000</button>
+          <button type="button" data-t="10000">1만</button>
+          <button type="button" data-t="1000000">100만</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">시행 간격</span>
+        <div class="seg" id="speed" data-value="100">
+          <button type="button" data-v="100">0.1초</button>
+          <button type="button" data-v="20">0.02초</button>
+          <button type="button" data-v="1">0.001초</button>
+          <button type="button" data-v="0">즉시</button>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" type="button" id="startBtn">시작</button>
+        <button class="btn" type="button" id="resetBtn">리셋</button>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="진행">
+        <h2>진행 <span class="hint" id="progText">대기 중</span></h2>
+        <div class="progress"><i id="progBar"></i></div>
+        <div class="balls" id="lastResult" style="margin-top:16px"><span class="t-muted">시작 전</span></div>
+        <div class="stats" style="margin-top:16px">
+          <div class="stat hero"><div class="k" id="ratioKey">관측 비율</div><div class="v" id="ratio">–</div><div class="u" id="ratioSub"></div></div>
+          <div class="stat"><div class="k">이론 확률</div><div class="v" id="theory">–</div><div class="u">기대값</div></div>
+          <div class="stat"><div class="k">비율 편차</div><div class="v" id="devPct">–</div><div class="u">이론 대비 %p</div></div>
+          <div class="stat"><div class="k">횟수 편차</div><div class="v" id="devCount">–</div><div class="u">기대 횟수 대비</div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="수렴">
+        <h2>비율 수렴 <span class="hint">시행이 늘수록 이론값에 붙습니다</span></h2>
+        <div id="convChart"></div>
+      </section>
+
+      <section class="card" aria-label="분포">
+        <h2>결과 분포</h2>
+        <div id="distChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>결과 상세 <span class="hint" id="streakHint"></span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="faceTable">
+        <thead><tr><th>결과</th><th>횟수</th><th>관측 확률</th><th>이론 확률</th><th>편차(%p)</th><th>최장 연속</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      <b>도박사의 오류</b>: 앞면이 10번 연속 나와도 다음 확률은 그대로입니다. 큰 수의 법칙은
+      "다음에 뒷면이 더 잘 나온다"가 아니라 "시행이 충분히 많아지면 비율이 묻힌다"는 뜻입니다.
+      실제로 아래 <b>횟수 편차</b>는 시행이 늘수록 대체로 커집니다(√n에 비례).
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">난수는 브라우저의 <code>Math.random</code>을 사용합니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/lln.js"></script>
+</body>
+</html>

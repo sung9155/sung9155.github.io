@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>은퇴 자산 소진 시뮬레이터 · 몇 살까지 버틸까</title>
+<meta name="description" content="현재 자산·저축액·은퇴 후 생활비·수익률·물가상승률·국민연금을 넣으면 자산이 언제 소진되는지 계산합니다. 변동성을 반영한 몬테카를로 1,000회로 성공 확률과 상·하위 경로까지.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="은퇴 자산 소진 시뮬레이터">
+<meta property="og:description" content="내 돈은 몇 살에 바닥날까? 몬테카를로 1,000회로 확인.">
+<meta property="og:url" content="https://sung9155.github.io/retire.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌅</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html" aria-current="page">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">은퇴 자산 소진 시뮬레이터</h1>
+  <p class="page-sub">수익률에 변동성을 넣고 1,000번 돌려 자산이 끝까지 버틸 확률을 계산합니다.</p>
+
+  <div class="grid grid-side">
+    <section class="card" aria-label="조건">
+      <h2>조건</h2>
+
+      <div class="row">
+        <div class="field"><label for="ageNow">현재 나이</label><input type="number" id="ageNow" value="35" min="18" max="90" step="1"></div>
+        <div class="field"><label for="ageRetire">은퇴 나이</label><input type="number" id="ageRetire" value="60" min="30" max="95" step="1"></div>
+        <div class="field"><label for="ageEnd">기대 수명</label><input type="number" id="ageEnd" value="95" min="60" max="110" step="1"></div>
+      </div>
+
+      <div class="field">
+        <label for="assets">현재 자산 (원)</label>
+        <input type="number" id="assets" value="100000000" step="10000000" min="0">
+        <div class="help" id="assetsHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="saveMonthly">은퇴 전 월 저축액 (원)</label>
+        <input type="number" id="saveMonthly" value="1000000" step="100000" min="0">
+        <div class="help">물가상승률만큼 매년 늘어난다고 가정합니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="spendMonthly">은퇴 후 월 생활비 (원, 현재가치)</label>
+        <input type="number" id="spendMonthly" value="2500000" step="100000" min="0">
+        <div class="help">은퇴 시점에는 물가상승분만큼 커진 금액이 필요합니다.</div>
+      </div>
+
+      <div class="row">
+        <div class="field"><label for="ret">기대 수익률 (연 %)</label><input type="number" id="ret" value="5" step="0.5"></div>
+        <div class="field"><label for="vol">변동성 (연 %)</label><input type="number" id="vol" value="12" step="1" min="0"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="infl">물가상승률 (연 %)</label><input type="number" id="infl" value="2.5" step="0.1" min="0"></div>
+        <div class="field"><label for="sims">시뮬 횟수</label>
+          <select id="sims">
+            <option value="200">200회</option>
+            <option value="1000" selected>1,000회</option>
+            <option value="5000">5,000회</option>
+          </select>
+        </div>
+      </div>
+
+      <details class="adv" open>
+        <summary>국민연금</summary>
+        <div>
+          <div class="row">
+            <div class="field"><label for="pension">월 수령액 (원, 현재가치)</label><input type="number" id="pension" value="900000" step="100000" min="0"></div>
+            <div class="field"><label for="pensionAge">수령 시작 나이</label><input type="number" id="pensionAge" value="65" min="55" max="80" step="1"></div>
+          </div>
+        </div>
+      </details>
+
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" type="button" id="runBtn">다시 시뮬레이션</button>
+      </div>
+    </section>
+
+    <div>
+      <section class="card" aria-label="요약">
+        <h2>결과 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">자산 유지 성공률</div><div class="v" id="successRate">–</div><div class="u" id="successSub"></div></div>
+          <div class="stat"><div class="k">은퇴 시점 자산(중앙값)</div><div class="v" id="atRetire">–</div><div class="u" id="atRetireSub"></div></div>
+          <div class="stat"><div class="k">소진 나이(중앙값)</div><div class="v" id="ruinAge">–</div><div class="u" id="ruinSub"></div></div>
+          <div class="stat"><div class="k">은퇴 첫 해 생활비</div><div class="v" id="firstSpend">–</div><div class="u" id="firstSpendSub"></div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="자산 경로">
+        <h2>나이별 자산 경로 <span class="hint">상위 10% · 중앙값 · 하위 10%</span></h2>
+        <div id="pathChart"></div>
+      </section>
+
+      <section class="card" aria-label="소진 분포">
+        <h2>자산 소진 나이 분포</h2>
+        <div id="ruinChart"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>나이별 자산 (중앙값 기준)</h2>
+    <div class="table-wrap">
+      <table id="ageTable">
+        <thead><tr><th>나이</th><th>하위 10%</th><th>중앙값</th><th>상위 10%</th><th>연 생활비</th><th>상태</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      수익률은 매달 정규분포로 뽑습니다(연 기대수익률·변동성 기준). 세금·건강보험료·간병비·상속 등은
+      반영하지 않았고, 국민연금과 생활비는 물가에 연동된다고 가정했습니다.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">투자 자문이 아니라 가정에 따른 산술 시뮬레이션입니다. 수치는 가정이 바뀌면 크게 달라집니다.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/retire.js"></script>
+</body>
+</html>
