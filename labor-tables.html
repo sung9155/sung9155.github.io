@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노동·근로 기준표 · 최저임금·주휴수당·연차·퇴직금</title>
+<meta name="description" content="연도별 최저임금, 주휴수당 계산기, 근속연수별 연차휴가 일수, 퇴직금 계산기, 실업급여 소정급여일수, 근로시간 월 환산표를 한 페이지에 모았습니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="노동·근로 기준표">
+<meta property="og:description" content="최저임금·주휴수당·연차·퇴직금·실업급여 일수를 표와 계산기로 한 번에.">
+<meta property="og:url" content="https://sung9155.github.io/labor-tables.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👷</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+      <a href="salary-table.html">실수령표</a>
+      <a href="tax-tables.html">세율표</a>
+      <a href="labor-tables.html" aria-current="page">노동표</a>
+      <a href="loan-table.html">상환표</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">노동·근로 기준표</h1>
+  <p class="page-sub">알바·직장인이 자주 찾는 노동 기준 수치를 표로 모았습니다. 표만으로 안 끝나는 주휴수당·퇴직금은 계산기를 붙였습니다.</p>
+
+  <div class="chips" id="toc" style="margin-bottom:20px">
+    <button type="button" data-go="min-wage">최저임금</button>
+    <button type="button" data-go="weekly-holiday">주휴수당</button>
+    <button type="button" data-go="annual-leave">연차휴가</button>
+    <button type="button" data-go="severance">퇴직금</button>
+    <button type="button" data-go="unemployment">실업급여 일수</button>
+    <button type="button" data-go="hours">근로시간 환산</button>
+  </div>
+
+  <!-- ① 최저임금 ─────────────────────────────────────── -->
+  <section class="card" id="min-wage" aria-label="연도별 최저임금">
+    <h2>연도별 최저임금 <span class="hint">고용노동부 고시 · 시간급</span></h2>
+    <div id="mwChart"></div>
+    <div class="btn-row" style="margin:14px 0 12px">
+      <button class="btn" type="button" id="mwCsv" style="flex:0 0 auto">CSV 내보내기</button>
+      <span class="help" style="flex:1;margin:0;align-self:center">표의 연도를 클릭하면 아래 계산기의 시급에 반영됩니다.</span>
+    </div>
+    <div class="table-wrap" style="max-height:420px">
+      <table id="mwTable">
+        <thead><tr>
+          <th>연도</th><th>시급</th><th>전년 대비</th><th>일급 (8시간)</th><th>월 환산 (209시간)</th>
+        </tr></thead>
+        <tbody id="mwBody"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      월 환산액은 주 40시간 근무 기준 <b>월 209시간</b>입니다.
+      (주 40시간 + 주휴 8시간) × 365 ÷ 7 ÷ 12 ≒ 208.57 → 209시간으로 씁니다.
+      최저임금은 업종 구분 없이 모든 사업장에 동일하게 적용되며, 수습 기간이라도 1년 미만 계약직이거나
+      단순노무직이면 감액할 수 없습니다.
+    </p>
+  </section>
+
+  <!-- ② 주휴수당 ─────────────────────────────────────── -->
+  <section class="card" id="weekly-holiday" aria-label="주휴수당">
+    <h2>주휴수당 계산기 <span class="hint" id="whHint"></span></h2>
+
+    <div class="row">
+      <div class="field">
+        <label for="whHourly">시급 (원)</label>
+        <input type="number" id="whHourly" value="10320" step="10" min="0">
+      </div>
+      <div class="field">
+        <label for="whHours">주 소정근로시간</label>
+        <input type="number" id="whHours" value="40" step="1" min="0" max="68">
+      </div>
+    </div>
+    <div class="chips" id="whChips" style="margin-bottom:14px">
+      <button type="button" data-hours="15">주 15시간</button>
+      <button type="button" data-hours="20">주 20시간</button>
+      <button type="button" data-hours="25">주 25시간</button>
+      <button type="button" data-hours="30">주 30시간</button>
+      <button type="button" data-hours="40">주 40시간</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat hero"><div class="k">주휴수당 (주 1회)</div><div class="v" id="whWeekly">–</div><div class="u" id="whWeeklySub"></div></div>
+      <div class="stat"><div class="k">주급 (주휴 포함)</div><div class="v" id="whWeekPay">–</div><div class="u">시급×근로시간 + 주휴수당</div></div>
+      <div class="stat"><div class="k">월급 환산</div><div class="v" id="whMonthPay">–</div><div class="u">주급 × 365 ÷ 7 ÷ 12</div></div>
+      <div class="stat good"><div class="k">주휴 포함 실질시급</div><div class="v" id="whEff">–</div><div class="u" id="whEffSub"></div></div>
+    </div>
+    <div class="help" id="whWarn" style="margin-top:10px"></div>
+
+    <div class="table-wrap" style="max-height:none;margin-top:14px">
+      <table id="whTable">
+        <thead><tr>
+          <th>주 소정근로시간</th><th>주휴시간</th><th>주휴수당</th><th>주급</th><th>월급 환산</th><th>실질시급</th>
+        </tr></thead>
+        <tbody id="whBody"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      주휴수당 = (주 소정근로시간 ÷ 40, 최대 1) × 8시간 × 시급.
+      <b>주 소정근로시간 15시간 미만(초단시간 근로자)은 주휴수당이 없습니다.</b>
+      주휴수당은 그 주에 소정근로일을 개근한 경우에 발생합니다.
+      주 40시간을 넘는 시간은 연장근로로 50% 가산수당이 별도로 붙으며 이 표에는 반영하지 않았습니다.
+    </p>
+  </section>
+
+  <!-- ③ 연차휴가 ─────────────────────────────────────── -->
+  <section class="card" id="annual-leave" aria-label="연차휴가">
+    <h2>근속연수별 연차휴가 일수 <span class="hint">근로기준법 제60조</span></h2>
+    <div class="table-wrap" style="max-height:440px">
+      <table id="avTable">
+        <thead><tr>
+          <th>근속연수</th><th>연차 일수</th><th>가산 일수</th><th>산정 근거</th>
+        </tr></thead>
+        <tbody id="avBody"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      입사 후 1년 미만은 1개월 개근할 때마다 1일씩, 최대 11일이 생깁니다.
+      1년 이상 근무하면 15일이 생기고, 3년 차부터 2년마다 1일씩 가산되어 <b>최대 25일</b>까지 늘어납니다.
+      2018년 5월 개정 이후 1년 미만 기간에 쓴 연차를 1년 차 15일에서 차감하지 않으므로,
+      입사 2년 차까지 최대 26일(11 + 15)을 쓸 수 있습니다.
+      연차는 상시 근로자 5인 이상 사업장에 적용되고, 주 15시간 미만 초단시간 근로자는 대상이 아닙니다.
+    </p>
+  </section>
+
+  <!-- ④ 퇴직금 ───────────────────────────────────────── -->
+  <section class="card" id="severance" aria-label="퇴직금">
+    <h2>퇴직금 계산기 <span class="hint" id="svHint"></span></h2>
+
+    <div class="row">
+      <div class="field">
+        <label for="svJoin">입사일</label>
+        <input type="date" id="svJoin" value="2021-03-02" style="width:100%;padding:9px 11px;font-size:14.5px;background:var(--page);color:var(--ink);border:1px solid var(--border);border-radius:9px;font-family:inherit">
+      </div>
+      <div class="field">
+        <label for="svLeave">마지막 근무일</label>
+        <input type="date" id="svLeave" value="2026-03-01" style="width:100%;padding:9px 11px;font-size:14.5px;background:var(--page);color:var(--ink);border:1px solid var(--border);border-radius:9px;font-family:inherit">
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">임금 입력 방식</span>
+      <div class="seg" id="svMode" data-value="avg">
+        <button type="button" data-v="avg">월 평균임금</button>
+        <button type="button" data-v="sum3">퇴직 전 3개월 합계</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="svPay" id="svPayLabel">월 평균임금 (원)</label>
+      <input type="number" id="svPay" value="3000000" step="100000" min="0">
+      <div class="help">세전 총액 기준입니다. 기본급 + 각종 수당 + 비과세(식대 등)를 모두 포함합니다.</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="svBonus">연간 상여금 (원, 선택)</label>
+        <input type="number" id="svBonus" value="0" step="100000" min="0">
+      </div>
+      <div class="field">
+        <label for="svAnnualPay">연차수당 (원, 선택)</label>
+        <input type="number" id="svAnnualPay" value="0" step="100000" min="0">
+      </div>
+    </div>
+    <div class="help" style="margin:-6px 0 14px">연간 상여금·연차수당은 3/12(3개월분)만 평균임금에 더해집니다.</div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">재직일수</div><div class="v" id="svDays">–</div><div class="u" id="svYears"></div></div>
+      <div class="stat"><div class="k">1일 평균임금</div><div class="v" id="svAvgDaily">–</div><div class="u" id="svAvgSub"></div></div>
+      <div class="stat hero"><div class="k">예상 퇴직금</div><div class="v" id="svAmount">–</div><div class="u" id="svAmountSub"></div></div>
+    </div>
+    <div class="help" id="svWarn" style="margin-top:10px"></div>
+
+    <p class="note">
+      퇴직금 = <b>1일 평균임금 × 30일 × (재직일수 ÷ 365)</b>.
+      1일 평균임금은 퇴직 직전 3개월간 지급된 임금 총액을 그 기간의 총 일수(89~92일)로 나눈 값입니다.
+      <b>계속근로기간 1년 미만이거나 주 소정근로시간 15시간 미만이면 퇴직금 지급 대상이 아닙니다.</b>
+      산정된 평균임금이 통상임금보다 적으면 <b>통상임금</b>을 평균임금으로 봅니다(근로자퇴직급여 보장법·근로기준법 제2조).
+      결근·휴직 등으로 평균임금이 낮아진 기간은 산정에서 제외되므로 실제 금액과 차이가 날 수 있습니다.
+    </p>
+  </section>
+
+  <!-- ⑤ 실업급여 소정급여일수 ────────────────────────── -->
+  <section class="card" id="unemployment" aria-label="실업급여 소정급여일수">
+    <h2>실업급여(구직급여) 소정급여일수 <span class="hint">2019.10.1 이후 이직 기준</span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="ueTable">
+        <thead><tr>
+          <th>고용보험 가입기간</th><th>50세 미만</th><th>50세 이상 · 장애인</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>1년 미만</td><td>120일</td><td>120일</td></tr>
+          <tr><td>1년 이상 3년 미만</td><td>150일</td><td>180일</td></tr>
+          <tr><td>3년 이상 5년 미만</td><td>180일</td><td>210일</td></tr>
+          <tr><td>5년 이상 10년 미만</td><td>210일</td><td>240일</td></tr>
+          <tr class="year-mark"><td>10년 이상</td><td>240일</td><td>270일</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      연령은 <b>이직 당시 만 나이</b> 기준입니다. 1일 구직급여액은 이직 전 3개월 평균임금의 <b>60%</b>이며,
+      상한액과 하한액이 적용됩니다(하한액은 최저임금과 연동됩니다). 상·하한 금액은 매년 바뀌므로
+      고용보험 홈페이지의 최신 고시를 확인하세요.
+      받으려면 이직 전 18개월 동안 피보험단위기간 180일 이상, 비자발적 이직 등 수급요건을 함께 충족해야 합니다.
+    </p>
+  </section>
+
+  <!-- ⑥ 근로시간 환산 ────────────────────────────────── -->
+  <section class="card" id="hours" aria-label="근로시간 월 환산">
+    <h2>근로시간 월 환산표 <span class="hint" id="cvHint"></span></h2>
+    <div class="field" style="max-width:260px">
+      <label for="cvHourly">시급 (원)</label>
+      <input type="number" id="cvHourly" value="10320" step="10" min="0">
+    </div>
+    <div class="table-wrap" style="max-height:none">
+      <table id="cvTable">
+        <thead><tr>
+          <th>주 소정근로시간</th><th>주휴시간</th><th>월 환산시간</th><th>월급 (시급 기준)</th><th>연봉 환산</th>
+        </tr></thead>
+        <tbody id="cvBody"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      월 환산시간 = <b>(주 소정근로시간 + 주휴시간) × 365 ÷ 7 ÷ 12</b>.
+      1년은 365일 = 52.14주이므로 한 달은 평균 4.345주입니다.
+      주 40시간이면 (40 + 8) × 4.345 ≒ 208.6 → 실무에서는 <b>209시간</b>으로 씁니다.
+      괄호 안은 반올림 전 값이고, 월급은 반올림한 환산시간 × 시급으로 계산했습니다.
+      주 15시간 미만은 주휴시간이 붙지 않습니다.
+    </p>
+  </section>
+
+  <section class="card">
+    <p class="note" style="margin-top:0">
+      이 페이지의 수치는 참고용 요약입니다. 요율·금액·한도 기준은 매년 바뀌므로 최신 고시를 확인하세요.
+      실제 적용은 개별 <b>근로계약서·취업규칙·단체협약</b>과 <b>고용노동부 최신 고시</b>를 따릅니다.
+      5인 미만 사업장은 연차휴가·연장근로 가산수당 등 일부 조항이 적용되지 않습니다.
+      다툼이 있으면 고용노동부 고객상담센터(☎1350) 또는 관할 고용노동지청에 문의하세요.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">요율·공제·최저임금 기준은 매년 바뀝니다. 정확한 금액은 고용노동부·고용보험 최신 고시에서 확인하세요.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/labor-tables.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대출 월 상환금 표 · 금리 × 기간 매트릭스</title>
+<meta name="description" content="3억 30년 4.5%면 월 얼마? 금리 2~8%와 기간 10~40년의 원리금균등 월 상환금을 표 한 장으로 봅니다. 1억당 월 납입금, 금리 1%p 상승 영향, 상환방식 비교, DSR 한도 역산까지.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="대출 월 상환금 표 · 금리 × 기간 한눈에">
+<meta property="og:description" content="금리 2~8% × 기간 10~40년 월 납입금 매트릭스. 1억당 환산, 금리 1%p 상승 영향, DSR 한도 역산.">
+<meta property="og:url" content="https://sung9155.github.io/loan-table.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+<style>
+/* 이 페이지에서만 쓰는 매트릭스 표 스타일 (base.css 토큰만 사용) */
+.mx td.cell { cursor: pointer; }
+.mx thead th:first-child { position: sticky; left: 0; z-index: 3; background: var(--surface-2); }
+.mx tbody td:first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); font-weight: 600; }
+.mx tbody tr:hover td:first-child { background: var(--surface-2); }
+.mx tbody td.on-line { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+.mx tbody td.sel, .mx tbody tr:hover td.sel {
+  background: var(--accent-soft); color: var(--ink); font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.cell-info {
+  margin-top: 10px; padding: 10px 12px; min-height: 40px;
+  background: var(--surface-2); border-radius: 10px;
+  font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.cell-info b { color: var(--ink); }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+      <a href="salary-table.html">실수령표</a>
+      <a href="tax-tables.html">세율표</a>
+      <a href="labor-tables.html">노동표</a>
+      <a href="loan-table.html" aria-current="page">상환표</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">대출 월 상환금 표</h1>
+  <p class="page-sub">"3억 30년 4.5%면 월 얼마?"를 표 한 장으로 답합니다. 금리(행) × 기간(열) 원리금균등 월 납입금 매트릭스입니다.</p>
+
+  <!-- ── 표 조건 ─────────────────────────────────────── -->
+  <section class="card" aria-label="표 조건">
+    <h2>표 조건 <span class="hint">금액을 바꾸면 아래 표가 모두 즉시 갱신됩니다</span></h2>
+    <div class="row" style="flex-wrap:wrap">
+      <div class="field" style="min-width:260px">
+        <label for="amount">대출 금액 (원)</label>
+        <input type="number" id="amount" value="300000000" step="10000000" min="0">
+        <div class="chips" id="amountChips" style="margin-top:6px">
+          <button type="button" data-set="100000000">1억</button>
+          <button type="button" data-set="200000000">2억</button>
+          <button type="button" data-set="300000000">3억</button>
+          <button type="button" data-set="500000000">5억</button>
+        </div>
+        <div class="help" id="amountHelp"></div>
+      </div>
+      <div class="field" style="min-width:260px">
+        <span class="field-label">금리 간격</span>
+        <div class="seg" id="rateStep" data-value="0.5">
+          <button type="button" data-v="0.5">0.5%p</button>
+          <button type="button" data-v="0.25">0.25%p</button>
+        </div>
+        <div class="help">표의 금리 행 간격입니다. 0.25%p를 고르면 2.00%~8.00% 25행이 됩니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 메인 매트릭스 ───────────────────────────────── -->
+  <section class="card" aria-label="금리 × 기간 월 상환금">
+    <h2>금리 × 기간 월 상환금 <span class="hint" id="mxHint"></span></h2>
+    <div class="table-wrap">
+      <table class="mx" id="mxTable">
+        <thead><tr id="mxHead"></tr></thead>
+        <tbody id="mxBody"></tbody>
+      </table>
+    </div>
+    <div class="cell-info" id="cellInfo"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn" type="button" id="csvBtn" style="flex:0 0 auto">CSV 내보내기</button>
+    </div>
+    <p class="note">
+      계산 기준 2026년 · 원리금균등 · 월 복리(연이율 ÷ 12). 셀 값은 매달 내는 금액(원)입니다.
+      셀에 마우스를 올리면 아래 회색 칸에 총이자·총상환액이 나오고, 셀을 누르면 그 조건이 아래 카드에 고정됩니다.
+    </p>
+  </section>
+
+  <!-- ── 선택한 조건 ─────────────────────────────────── -->
+  <section class="card" aria-label="선택한 조건">
+    <h2>선택한 조건 <span class="hint" id="selHint"></span></h2>
+    <div class="stats">
+      <div class="stat hero"><div class="k">월 납입금</div><div class="v" id="selPay">–</div><div class="u" id="selPaySub"></div></div>
+      <div class="stat"><div class="k">총 이자</div><div class="v" id="selInterest">–</div><div class="u" id="selInterestSub"></div></div>
+      <div class="stat"><div class="k">총 상환액</div><div class="v" id="selTotal">–</div><div class="u">원금 + 이자</div></div>
+      <div class="stat"><div class="k">1억당 월 납입금</div><div class="v" id="selPerEok">–</div><div class="u">금액에 정비례합니다</div></div>
+    </div>
+  </section>
+
+  <div class="grid grid-2">
+    <!-- ── 1억원당 월 납입금 ─────────────────────────── -->
+    <section class="card" aria-label="1억원당 월 납입금">
+      <h2>1억원당 월 납입금 <span class="hint">대출금액과 무관한 참조표</span></h2>
+      <div class="table-wrap">
+        <table class="mx" id="perTable">
+          <thead><tr id="perHead"></tr></thead>
+          <tbody id="perBody"></tbody>
+        </table>
+      </div>
+      <p class="note">계산 기준 2026년 · 원리금균등. 대출금액이 2억이면 이 표의 값 × 2, 3.5억이면 × 3.5 입니다.</p>
+    </section>
+
+    <!-- ── 금리 1%p 상승 영향 ────────────────────────── -->
+    <section class="card" aria-label="금리 1%p 상승 영향">
+      <h2>금리 1%p 상승 영향 <span class="hint" id="shockHint"></span></h2>
+      <div class="table-wrap" style="max-height:none">
+        <table id="shockTable">
+          <thead><tr id="shHead"></tr></thead>
+          <tbody id="shBody"></tbody>
+        </table>
+      </div>
+      <p class="note">계산 기준 2026년 · 원리금균등. 선택한 금리에서 +1%p 되었을 때의 월 납입금·총이자 변화입니다.</p>
+    </section>
+  </div>
+
+  <!-- ── 상환방식 비교 ───────────────────────────────── -->
+  <section class="card" aria-label="상환방식 비교">
+    <h2>상환방식 비교 <span class="hint" id="cmpHint"></span></h2>
+    <div class="table-wrap" style="max-height:none">
+      <table id="cmpTable">
+        <thead><tr>
+          <th>방식</th><th>첫 달 납입금</th><th>마지막 달 납입금</th><th>총 이자</th><th>총 상환액</th><th>이자 비중</th>
+        </tr></thead>
+        <tbody id="cmpBody"></tbody>
+      </table>
+    </div>
+    <p class="note">
+      계산 기준 2026년. 원리금균등은 매달 같은 금액을, 원금균등은 원금을 균등하게 갚아 초반 부담이 크고 총이자가 적습니다.
+      만기일시는 매달 이자만 내고 만기에 원금을 한 번에 갚아 총이자가 가장 큽니다. 위 매트릭스는 원리금균등 기준입니다.
+    </p>
+  </section>
+
+  <!-- ── DSR 한도 ────────────────────────────────────── -->
+  <section class="card" aria-label="DSR 한도로 보는 대출 가능액">
+    <h2>DSR 한도로 보는 대출 가능액 <span class="hint">연 상환액이 소득의 몇 %까지인지로 역산</span></h2>
+    <div class="grid grid-side">
+      <div>
+        <div class="field">
+          <label for="dsrIncome">연소득 (원, 세전)</label>
+          <input type="number" id="dsrIncome" value="60000000" step="1000000" min="0">
+          <div class="help" id="dsrIncomeHelp"></div>
+        </div>
+        <div class="field">
+          <label for="dsrExisting">기존 대출 연간 원리금 상환액 (원)</label>
+          <input type="number" id="dsrExisting" value="0" step="1000000" min="0">
+          <div class="help">이미 갚고 있는 대출의 1년치 원금 + 이자 합계입니다.</div>
+        </div>
+        <div class="field">
+          <span class="field-label">DSR 한도 (직접 선택)</span>
+          <div class="seg" id="dsrLimit" data-value="40">
+            <button type="button" data-v="40">40%</button>
+            <button type="button" data-v="50">50%</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="dsrRate">금리 (%)</label>
+            <input type="number" id="dsrRate" value="4.5" step="0.1" min="0" max="30">
+          </div>
+          <div class="field">
+            <label for="dsrYears">기간 (년)</label>
+            <input type="number" id="dsrYears" value="30" step="1" min="1" max="50">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" type="button" id="dsrSync">위 표에서 선택한 조건 가져오기</button>
+        </div>
+      </div>
+      <div>
+        <div class="stats">
+          <div class="stat"><div class="k">연 상환 여력</div><div class="v" id="dsrRoom">–</div><div class="u" id="dsrRoomSub"></div></div>
+          <div class="stat"><div class="k">월 상환 가능액</div><div class="v" id="dsrMonthly">–</div><div class="u">연 여력 ÷ 12</div></div>
+          <div class="stat hero"><div class="k">최대 대출 가능액</div><div class="v" id="dsrMax">–</div><div class="u" id="dsrMaxSub"></div></div>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn" type="button" id="dsrApply">이 금액을 위 표에 적용</button>
+        </div>
+        <p class="note">
+          원리금균등 역산: 최대 원금 = 월 상환 가능액 × (1 − (1 + r)<sup>−n</sup>) ÷ r (r = 연이율 ÷ 12 ÷ 100, n = 개월수).
+          DSR 한도 40% / 50%는 여기서 사용자가 직접 고르는 값입니다. 실제 적용 한도와 소득·기존 대출 인정 방식은
+          금융권·상품·지역·차주 조건에 따라 다르므로, 실제 가능 금액은 금융기관에 확인해야 합니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 그래프 ──────────────────────────────────────── -->
+  <section class="card" aria-label="금리별 총이자">
+    <h2>금리별 총이자 <span class="hint" id="chartHint"></span></h2>
+    <div id="interestChart"></div>
+    <p class="note">기간을 30년으로 고정하고 금리만 2%~8%로 바꿨을 때의 총이자입니다. 원리금균등 기준.</p>
+  </section>
+
+  <p class="note">
+    월 복리(연이율 ÷ 12) 기준의 단순 계산이며, 실제 상품은 일수 계산·중도상환수수료·보증료·우대금리에 따라 달라집니다.
+    요율·공제 기준은 매년 바뀌므로 최신 고시를 확인하세요.
+  </p>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">한 조건의 월별 상환표·잔금 그래프가 필요하면 <a href="loan.html">대출 상환 계산기</a>를 쓰세요.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/loan-table.js"></script>
+</body>
+</html>

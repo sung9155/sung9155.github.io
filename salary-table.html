@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연봉 실수령액 표 · 연봉 구간별 월 실수령액 한눈에</title>
+<meta name="description" content="연봉 2,000만원부터 2억원까지 구간별 월 실수령액 표. 국민연금·건강보험·장기요양·고용보험과 소득세·지방소득세를 뺀 실수령액과 실수령률을 한 표에서 비교하고 CSV로 내려받으세요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="연봉 실수령액 표">
+<meta property="og:description" content="연봉 구간별 월 실수령액과 실수령률을 표 하나로. 부양가족·비과세·요율까지 직접 조정.">
+<meta property="og:url" content="https://sung9155.github.io/salary-table.html">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+<link rel="stylesheet" href="assets/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./">🎲 시뮬레이터</a>
+    <nav class="nav">
+      <a href="./">홈</a>
+      <a href="lotto.html">로또</a>
+      <a href="loan.html">대출</a>
+      <a href="savings.html">적금</a>
+      <a href="salary.html">연봉</a>
+      <a href="rent.html">전월세</a>
+      <a href="retire.html">은퇴</a>
+      <a href="invest.html">투자</a>
+      <a href="gacha.html">가챠</a>
+      <a href="lln.html">확률</a>
+      <a href="salary-table.html" aria-current="page">실수령표</a>
+      <a href="tax-tables.html">세율표</a>
+      <a href="labor-tables.html">노동표</a>
+      <a href="loan-table.html">상환표</a>
+    </nav>
+    <button class="theme-btn" type="button" aria-label="테마 전환">☾</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">연봉 실수령액 표</h1>
+  <p class="page-sub">연봉 구간별 월 실수령액을 한 표에서 봅니다. 부양가족·비과세·보험 요율을 바꾸면 표 전체가 바로 다시 계산됩니다.</p>
+
+  <div class="grid grid-side">
+    <!-- ── 설정 ───────────────────────────────────────── -->
+    <section class="card" aria-label="표 설정">
+      <h2>표 설정</h2>
+
+      <div class="field">
+        <label for="myAnnual">내 연봉 (원, 세전)</label>
+        <input type="number" id="myAnnual" value="50000000" step="1000000" min="0">
+        <div class="chips" style="margin-top:6px">
+          <button type="button" data-a="30000000">3천만</button>
+          <button type="button" data-a="40000000">4천만</button>
+          <button type="button" data-a="50000000">5천만</button>
+          <button type="button" data-a="70000000">7천만</button>
+          <button type="button" data-a="100000000">1억</button>
+        </div>
+        <div class="help" id="myAnnualHelp"></div>
+      </div>
+
+      <div class="field">
+        <label for="nontax">월 비과세액 (원)</label>
+        <input type="number" id="nontax" value="200000" step="50000" min="0">
+        <div class="help">식대는 월 20만원까지 비과세입니다. 차량유지비 등이 있으면 더하세요.</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="family">부양가족 수 (본인 포함)</label>
+          <input type="number" id="family" value="1" step="1" min="1" max="10">
+        </div>
+        <div class="field">
+          <label for="children">20세 이하 자녀 수</label>
+          <input type="number" id="children" value="0" step="1" min="0" max="10">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="startAnnual">표 시작 연봉 (원)</label>
+          <input type="number" id="startAnnual" value="20000000" step="1000000" min="0">
+        </div>
+        <div class="field">
+          <label for="endAnnual">표 끝 연봉 (원)</label>
+          <input type="number" id="endAnnual" value="200000000" step="1000000" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">구간 간격</span>
+        <div class="seg" id="seg" data-value="1000000">
+          <button type="button" data-v="1000000">100만</button>
+          <button type="button" data-v="2000000">200만</button>
+          <button type="button" data-v="5000000">500만</button>
+          <button type="button" data-v="10000000">1,000만</button>
+        </div>
+        <div class="help" id="segHelp"></div>
+      </div>
+
+      <details class="adv">
+        <summary>보험 요율 · 기준 (직접 수정)</summary>
+        <div>
+          <div class="row">
+            <div class="field"><label for="rPension">국민연금 (%)</label><input type="number" id="rPension" value="4.5" step="0.05"></div>
+            <div class="field"><label for="rHealth">건강보험 (%)</label><input type="number" id="rHealth" value="3.545" step="0.005"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="rCare">장기요양 (건보료의 %)</label><input type="number" id="rCare" value="12.95" step="0.05"></div>
+            <div class="field"><label for="rEmploy">고용보험 (%)</label><input type="number" id="rEmploy" value="0.9" step="0.05"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="pensionMax">연금 기준소득 상한 (원/월)</label><input type="number" id="pensionMax" value="6370000" step="10000"></div>
+            <div class="field"><label for="pensionMin">연금 기준소득 하한 (원/월)</label><input type="number" id="pensionMin" value="400000" step="10000"></div>
+          </div>
+          <div class="help">요율은 매년 바뀝니다. 최신 고시 요율로 바꿔서 계산하세요.</div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── 요약 · 곡선 ────────────────────────────────── -->
+    <div>
+      <section class="card" aria-label="내 연봉 요약">
+        <h2>내 연봉 기준 <span class="hint" id="sumHint"></span></h2>
+        <div class="stats">
+          <div class="stat hero"><div class="k">월 실수령액</div><div class="v" id="netMonth">–</div><div class="u" id="netMonthSub"></div></div>
+          <div class="stat"><div class="k">연 실수령액</div><div class="v" id="netYear">–</div><div class="u">세후 기준</div></div>
+          <div class="stat bad"><div class="k">월 공제 합계</div><div class="v" id="deductMonth">–</div><div class="u" id="deductSub"></div></div>
+          <div class="stat"><div class="k">실수령률</div><div class="v" id="netRate">–</div><div class="u">월 실수령 ÷ 월 세전</div></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="실수령률 곡선">
+        <h2>연봉 대비 실수령률 <span class="hint">선에 마우스를 올리면 상세</span></h2>
+        <div id="rateChart"></div>
+        <p class="note">연봉이 오를수록 누진세율 때문에 실수령률은 서서히 낮아집니다. 국민연금은 기준소득월액 상한까지만 부과돼 고연봉 구간에서는 보험료 비중이 줄어듭니다.</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- ── 표 ───────────────────────────────────────────── -->
+  <section class="card">
+    <h2>연봉 구간별 실수령액 표 <span class="hint" id="rowsHint"></span></h2>
+    <div class="btn-row" style="margin-bottom:12px">
+      <button class="btn" type="button" id="scrollBtn">내 연봉 위치로</button>
+      <button class="btn" type="button" id="csvBtn">CSV 내보내기</button>
+    </div>
+    <div class="table-wrap" id="tableWrap">
+      <table id="salaryTable">
+        <caption class="t-muted" style="text-align:left;padding:8px 11px;font-size:12px" id="tableCaption"></caption>
+        <thead><tr>
+          <th>연봉</th><th>월 세전</th><th>국민연금</th><th>건강+장기요양</th><th>고용보험</th>
+          <th>소득세+지방세</th><th>공제 합계</th><th>월 실수령액</th><th>실수령률</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="note">
+      소득세는 간이세액표가 아니라 근로소득공제 → 인적공제·보험료공제 → 종합소득세율 →
+      근로소득세액공제·자녀세액공제 순으로 계산한 <b>연간 추정치</b>를 12로 나눈 값입니다.
+      실제 매월 원천징수액은 간이세액표를 따르고, 의료비·기부금·연금저축 등 다른 공제는 반영하지 않았으므로
+      연말정산 결과와는 차이가 납니다.
+    </p>
+    <p class="note">
+      기본 요율은 국민연금 4.5%, 건강보험 3.545%, 장기요양 건보료의 12.95%, 고용보험 0.9%(근로자 부담분)이고
+      국민연금 기준소득월액 상·하한은 2025년 7월 적용분(월 637만원 / 40만원)입니다.
+      소득세율은 과세표준 1,400만원 6% ~ 10억원 초과 45%의 현행 8단계 누진세율을 씁니다.
+      <b>요율·공제 기준은 매년 바뀌므로 최신 고시를 확인하세요.</b> 값은 위 "보험 요율 · 기준"에서 직접 바꿀 수 있습니다.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">요율·공제 기준은 매년 바뀝니다. 정확한 금액은 국세청 홈택스 또는 회사 급여 담당 부서에서 확인하세요.</div>
+</footer>
+
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/salary-core.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/salary-table.js"></script>
+</body>
+</html>
